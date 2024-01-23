@@ -17,7 +17,8 @@ import { themeObject } from './styles/themes/themeVariables';
 const App: React.FC = () => {
   const { language } = useLanguage();
   const theme = useAppSelector((state) => state.theme.theme);
-
+  console.log('test');
+  
   usePWA();
 
   useAutoNightMode();
