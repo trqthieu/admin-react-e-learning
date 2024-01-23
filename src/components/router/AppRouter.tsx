@@ -16,6 +16,8 @@ import RequireAuth from '@app/components/router/RequireAuth';
 import { withLoading } from '@app/hocs/withLoading.hoc';
 import NftDashboardPage from '@app/pages/DashboardPages/NftDashboardPage';
 import MedicalDashboardPage from '@app/pages/DashboardPages/MedicalDashboardPage';
+import AddUserPage from '@app/pages/AddUserPage';
+import UserListPage from '@app/pages/UserListPage';
 
 const NewsFeedPage = React.lazy(() => import('@app/pages/NewsFeedPage'));
 const DataTablesPage = React.lazy(() => import('@app/pages/DataTablesPage'));
@@ -117,6 +119,8 @@ const Payments = withLoading(PaymentsPage);
 
 const AuthLayoutFallback = withLoading(AuthLayout);
 const LogoutFallback = withLoading(Logout);
+const AddUser = withLoading(AddUserPage);
+const UserList = withLoading(UserListPage);
 
 export const AppRouter: React.FC = () => {
   const protectedLayout = (
@@ -136,6 +140,10 @@ export const AppRouter: React.FC = () => {
           </Route>
           <Route path="forms">
             <Route path="advanced-forms" element={<AdvancedForm />} />
+          </Route>
+          <Route path="users">
+            <Route path="add-user" element={<AddUser />} />
+            <Route path="" element={<UserList />} />
           </Route>
           <Route path="data-tables" element={<DataTables />} />
           <Route path="charts" element={<Charts />} />

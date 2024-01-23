@@ -96,6 +96,23 @@ export const sidebarNavigation: SidebarNavigationItem[] = [
     ],
   },
   {
+    title: 'User',
+    key: 'user',
+    icon: <UserOutlined />,
+    children: [
+      {
+        title: 'User list',
+        key: 'user-list',
+        url: '/users',
+      },
+      {
+        title: 'Add user',
+        key: 'add-user',
+        url: '/users/add-user',
+      },
+    ],
+  },
+  {
     title: 'common.dataTables',
     key: 'dataTables',
     url: '/data-tables',
