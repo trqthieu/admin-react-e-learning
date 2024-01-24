@@ -25,7 +25,7 @@ import { LastNameItem } from '@app/components/profile/profileCard/profileFormNav
 import { notificationController } from '@app/controllers/notificationController';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const formItemLayout = {
   labelCol: { span: 24 },
@@ -46,6 +46,8 @@ const AddUserPage: React.FC = () => {
   const [isLoading, setLoading] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const router = useParams();
+  console.log(router.id);
 
   const onFinish = async (values: any) => {
     setLoading(true);
@@ -72,10 +74,10 @@ const AddUserPage: React.FC = () => {
   };
   return (
     <>
-      <PageTitle>{t('common.advancedForms')}</PageTitle>
+      <PageTitle>{'Add User Page'}</PageTitle>
       <BaseRow gutter={[30, 30]}>
         <BaseCol xs={24} sm={24} xl={18}>
-          <BaseCard id="validation form" title={t('forms.validationForm')} padding="1.25rem">
+          <BaseCard id="validation form" title={'Add User'} padding="1.25rem">
             <BaseButtonsForm
               {...formItemLayout}
               isFieldsChanged={isFieldsChanged}
@@ -96,9 +98,9 @@ const AddUserPage: React.FC = () => {
             >
               <BaseForm.Item
                 name="email"
-                label={t('forms.stepFormLabels.login')}
+                label={'Email'}
                 rules={[
-                  { required: true, message: t('forms.stepFormLabels.loginError') },
+                  { required: true, message: 'Email is required' },
                   { type: 'email', message: 'Email is invalid' },
                 ]}
               >
@@ -122,7 +124,13 @@ const AddUserPage: React.FC = () => {
               <BaseForm.Item
                 name="password"
                 label={t('common.password')}
-                rules={[{ required: true, message: t('forms.stepFormLabels.passwordError') }]}
+                rules={[
+                  { required: true, message: t('forms.stepFormLabels.passwordError') },
+                  {
+                    min: 8,
+                    message: 'Password must be at least 8 characters',
+                  },
+                ]}
               >
                 <InputPassword />
               </BaseForm.Item>
