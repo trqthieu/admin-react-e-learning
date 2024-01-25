@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import * as S from '../components/tables/Tables/Tables.styles';
 import { ExclamationCircleFilled } from '@ant-design/icons';
+import { notificationController } from '@app/controllers/notificationController';
 const { confirm } = Modal;
 
 const initialPagination: Pagination = {
@@ -81,6 +82,7 @@ const UserListPage: React.FC = () => {
         deleteUser(id).then((res) => {
           if (res.affected) {
             fetch(initialPagination);
+            notificationController.success({ message: 'Delete user successfully' });
           }
         });
       },
@@ -183,7 +185,7 @@ const UserListPage: React.FC = () => {
               //   notificationController.info({ message: t('tables.inviteMessage', { name: record.id }) });
               // }}
             >
-              <Link to={`/users/${record.id}`}>{'View'}</Link>
+              <Link to={`/users/detail/${record.id}`}>{'View'}</Link>
             </BaseButton>
             {record.role !== 'ADMIN' && (
               <BaseButton type="default" danger onClick={() => handleDeleteRow(record.id)}>

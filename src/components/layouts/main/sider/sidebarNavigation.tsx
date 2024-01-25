@@ -103,7 +103,7 @@ export const sidebarNavigation: SidebarNavigationItem[] = [
       {
         title: 'User list',
         key: 'user-list',
-        url: '/users',
+        url: '/users/list',
       },
       {
         title: 'Add user',

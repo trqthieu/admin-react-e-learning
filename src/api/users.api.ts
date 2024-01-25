@@ -45,3 +45,13 @@ export const deleteUser = (id: number): Promise<DeletedResponse> =>
   httpApi.delete<DeletedResponse>(`users/${id}`).then((res) => {
     return res?.data;
   });
+
+export const getUser = (id: number): Promise<UserResponse> =>
+  httpApi.get<UserResponse>(`users/${id}`).then((res) => {
+    return res?.data;
+  });
+
+export const updateUser = (id: number, userPayload: AddUserRequest): Promise<UserResponse> =>
+  httpApi.patch<UserResponse>(`users/${id}`, { ...userPayload }).then((res) => {
+    return res?.data;
+  });

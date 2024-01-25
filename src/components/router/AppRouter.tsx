@@ -143,8 +143,8 @@ export const AppRouter: React.FC = () => {
           </Route>
           <Route path="users">
             <Route path="add-user" element={<AddUser />} />
-            <Route path="" element={<UserList />} />
-            <Route path=":id" element={<AddUser />} />
+            <Route path="list" element={<UserList />} />
+            <Route path="detail/:id" element={<AddUser />} />
           </Route>
           <Route path="data-tables" element={<DataTables />} />
           <Route path="charts" element={<Charts />} />
