@@ -18,6 +18,8 @@ import NftDashboardPage from '@app/pages/DashboardPages/NftDashboardPage';
 import MedicalDashboardPage from '@app/pages/DashboardPages/MedicalDashboardPage';
 import AddUserPage from '@app/pages/AddUserPage';
 import UserListPage from '@app/pages/UserListPage';
+import AddCoursePage from '@app/pages/courses/AddCoursePage';
+import ListCoursePage from '@app/pages/courses/ListCoursePage';
 
 const NewsFeedPage = React.lazy(() => import('@app/pages/NewsFeedPage'));
 const DataTablesPage = React.lazy(() => import('@app/pages/DataTablesPage'));
@@ -121,6 +123,8 @@ const AuthLayoutFallback = withLoading(AuthLayout);
 const LogoutFallback = withLoading(Logout);
 const AddUser = withLoading(AddUserPage);
 const UserList = withLoading(UserListPage);
+const AddCourse = withLoading(AddCoursePage);
+const ListCourse = withLoading(ListCoursePage);
 
 export const AppRouter: React.FC = () => {
   const protectedLayout = (
@@ -145,6 +149,11 @@ export const AppRouter: React.FC = () => {
             <Route path="add-user" element={<AddUser />} />
             <Route path="list" element={<UserList />} />
             <Route path="detail/:id" element={<AddUser />} />
+          </Route>
+          <Route path="courses">
+            <Route path="add-course" element={<AddCourse />} />
+            <Route path="list" element={<ListCourse />} />
+            <Route path="detail/:id" element={<AddCourse />} />
           </Route>
           <Route path="data-tables" element={<DataTables />} />
           <Route path="charts" element={<Charts />} />
