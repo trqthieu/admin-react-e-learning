@@ -1,5 +1,6 @@
 import { httpApi } from '@app/api/http.api';
 import { DeletedResponse, PaginationRequest, PaginationResponse } from './pagination.api';
+import { UserResponse } from './users.api';
 export interface AddCourseGroupRequest {
   name: string;
   description: string;
@@ -10,6 +11,7 @@ export interface CourseGroupResponse {
   id: number;
   name: string;
   description: string;
+  author: UserResponse;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
