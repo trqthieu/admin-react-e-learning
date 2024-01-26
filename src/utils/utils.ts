@@ -6,6 +6,7 @@ import maestro from '@app/assets/images/card-issuers/maestro.png';
 import { CurrencyTypeEnum, Severity } from '@app/interfaces/interfaces';
 import { BaseBadgeProps } from '@app/components/common/BaseBadge/BaseBadge';
 import { currencies } from '@app/constants/config/currencies';
+import { ERole } from '@app/constants/enums/role.enum';
 
 export const camelize = (string: string): string => {
   return string
@@ -59,6 +60,34 @@ export const defineColorByPriority = (priority: Priority): string => {
     case Priority.MEDIUM:
       return 'var(--warning-color)';
     case Priority.HIGH:
+      return 'var(--error-color)';
+    default:
+      return 'var(--success-color)';
+  }
+};
+
+export const defineColorByRole = (role: string): string => {
+  switch (role) {
+    case 'TEACHER':
+      return 'var(--primary-color)';
+    case 'STUDENT':
+      return 'var(--success-color)';
+    case 'ADMIN':
+      return 'var(--warning-color)';
+    default:
+      return 'var(--success-color)';
+  }
+};
+
+export const defineColorByStatus = (status: string): string => {
+  switch (status) {
+    case 'PENDING':
+      return 'var(--primary-color)';
+    case 'APPROVED':
+      return 'var(--success-color)';
+    case 'DRAFT':
+      return 'var(--warning-color)';
+    case 'REJECTED':
       return 'var(--error-color)';
     default:
       return 'var(--success-color)';

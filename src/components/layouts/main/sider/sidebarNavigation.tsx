@@ -9,6 +9,7 @@ import {
   TableOutlined,
   UserOutlined,
   BlockOutlined,
+  BookOutlined,
 } from '@ant-design/icons';
 import { ReactComponent as NftIcon } from '@app/assets/icons/nft-icon.svg';
 
@@ -92,6 +93,40 @@ export const sidebarNavigation: SidebarNavigationItem[] = [
         title: 'common.advancedForms',
         key: 'advanced-forms',
         url: '/forms/advanced-forms',
+      },
+    ],
+  },
+  {
+    title: 'User',
+    key: 'user',
+    icon: <UserOutlined />,
+    children: [
+      {
+        title: 'User list',
+        key: 'user-list',
+        url: '/users/list',
+      },
+      {
+        title: 'Add user',
+        key: 'add-user',
+        url: '/users/add-user',
+      },
+    ],
+  },
+  {
+    title: 'Course',
+    key: 'course',
+    icon: <BookOutlined />,
+    children: [
+      {
+        title: 'Course list',
+        key: 'course-list',
+        url: '/courses/list',
+      },
+      {
+        title: 'Add course',
+        key: 'add-course',
+        url: '/courses/add-course',
       },
     ],
   },
