@@ -10,6 +10,7 @@ import {
   UserOutlined,
   BlockOutlined,
   BookOutlined,
+  GroupOutlined,
 } from '@ant-design/icons';
 import { ReactComponent as NftIcon } from '@app/assets/icons/nft-icon.svg';
 
@@ -97,19 +98,19 @@ export const sidebarNavigation: SidebarNavigationItem[] = [
     ],
   },
   {
-    title: 'User',
-    key: 'user',
-    icon: <UserOutlined />,
+    title: 'Course Group',
+    key: 'courseGroup',
+    icon: <GroupOutlined />,
     children: [
       {
-        title: 'User list',
-        key: 'user-list',
-        url: '/users/list',
+        title: 'Course group list',
+        key: 'courseGroupList',
+        url: '/courseGroup/list',
       },
       {
-        title: 'Add user',
-        key: 'add-user',
-        url: '/users/add-user',
+        title: 'Add course group',
+        key: 'addCourseGroup',
+        url: '/courseGroup/add-courseGroup',
       },
     ],
   },
@@ -127,6 +128,23 @@ export const sidebarNavigation: SidebarNavigationItem[] = [
         title: 'Add course',
         key: 'add-course',
         url: '/courses/add-course',
+      },
+    ],
+  },
+  {
+    title: 'User',
+    key: 'user',
+    icon: <UserOutlined />,
+    children: [
+      {
+        title: 'User list',
+        key: 'user-list',
+        url: '/users/list',
+      },
+      {
+        title: 'Add user',
+        key: 'add-user',
+        url: '/users/add-user',
       },
     ],
   },

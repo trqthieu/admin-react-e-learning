@@ -20,6 +20,8 @@ import AddUserPage from '@app/pages/AddUserPage';
 import UserListPage from '@app/pages/UserListPage';
 import AddCoursePage from '@app/pages/courses/AddCoursePage';
 import ListCoursePage from '@app/pages/courses/ListCoursePage';
+import AddCourseGroupPage from '@app/pages/course-group/AddCourseGroupPage';
+import ListCourseGroupPage from '@app/pages/course-group/ListCourseGroupPage';
 
 const NewsFeedPage = React.lazy(() => import('@app/pages/NewsFeedPage'));
 const DataTablesPage = React.lazy(() => import('@app/pages/DataTablesPage'));
@@ -125,6 +127,8 @@ const AddUser = withLoading(AddUserPage);
 const UserList = withLoading(UserListPage);
 const AddCourse = withLoading(AddCoursePage);
 const ListCourse = withLoading(ListCoursePage);
+const AddCourseGroup = withLoading(AddCourseGroupPage);
+const ListCourseGroup = withLoading(ListCourseGroupPage);
 
 export const AppRouter: React.FC = () => {
   const protectedLayout = (
@@ -154,6 +158,11 @@ export const AppRouter: React.FC = () => {
             <Route path="add-course" element={<AddCourse />} />
             <Route path="list" element={<ListCourse />} />
             <Route path="detail/:id" element={<AddCourse />} />
+          </Route>
+          <Route path="courseGroup">
+            <Route path="add-courseGroup" element={<AddCourseGroup />} />
+            <Route path="list" element={<ListCourseGroup />} />
+            <Route path="detail/:id" element={<AddCourseGroup />} />
           </Route>
           <Route path="data-tables" element={<DataTables />} />
           <Route path="charts" element={<Charts />} />
