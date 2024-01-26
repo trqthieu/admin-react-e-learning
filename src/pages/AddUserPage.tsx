@@ -95,7 +95,7 @@ const AddUserPage: React.FC = () => {
     if (id) {
       fetchUser(+id);
     } else {
-      form.setFieldsValue({ ...initialValues });
+      form.resetFields();
     }
   }, [router, form, initialValues]);
   return (

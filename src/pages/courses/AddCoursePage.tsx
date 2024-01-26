@@ -1,6 +1,7 @@
 import { LoadingOutlined, MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { getCourseGroups } from '@app/api/course-group.api';
-import { AddUserRequest, getUsers } from '@app/api/users.api';
+import { AddCourseGroupRequest, addCourseGroup, getCourseGroups } from '@app/api/course-group.api';
+import { AddCourseRequest, addCourse, getCourse, updateCourse } from '@app/api/courses.api';
+import { getUsers } from '@app/api/users.api';
 import { BaseButton } from '@app/components/common/BaseButton/BaseButton';
 import { BaseCard } from '@app/components/common/BaseCard/BaseCard';
 import { BaseCol } from '@app/components/common/BaseCol/BaseCol';
@@ -13,13 +14,14 @@ import { BaseForm } from '@app/components/common/forms/BaseForm/BaseForm';
 import { BaseInput } from '@app/components/common/inputs/BaseInput/BaseInput';
 import { InputNumber } from '@app/components/common/inputs/InputNumber/InputNumber';
 import { BaseSelect } from '@app/components/common/selects/BaseSelect/BaseSelect';
+import { notificationController } from '@app/controllers/notificationController';
 import type { UploadProps } from 'antd';
-import { Button, DatePicker, Form, Input, message } from 'antd';
+import { Button, DatePicker, Divider, Form, Input, Modal, Space, message } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
-import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
+import moment from 'moment';
 const { RangePicker } = DatePicker;
 
 const formItemLayout = {
@@ -55,23 +57,27 @@ const beforeUpload = (file: File) => {
 const AddCoursePage: React.FC = () => {
   const [isFieldsChanged, setFieldsChanged] = useState(false);
   const [form] = useForm();
+  const [courseGroupForm] = useForm();
   const [teacherOption, setTeacherOption] = useState<Array<{ value: number; label: string }>>([]);
   const [courseGroupOption, setCourseGroupOption] = useState<Array<{ value: number; label: string }>>([]);
+  const [openModalCourseGroup, setOpenModalCourseGroup] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const initialValues = useMemo(() => {
     return {
-      category: 'OTHERS',
+      name: '',
+      banner: undefined,
+      teacherId: undefined,
       courseGroupId: undefined,
-      description: ['description test'],
-      discount: 10,
-      duration: 5,
-      guideline: 'test guideline',
-      level: 'C2',
-      name: 'test name',
-      price: 1,
-      status: 'APPROVED',
-      target: ['target test', 'target test 2'],
-      teacherId: 12,
-      timeDiscount: [moment('2024-01-26T03:47:28.301Z'), moment('2027-01-26T03:47:28.301Z')],
+      category: 'OTHERS',
+      discount: 0,
+      duration: 0,
+      level: 'A1',
+      price: 0,
+      status: 'DRAFT',
+      description: [],
+      target: [],
+      guideline: '',
+      timeDiscount: [],
     };
   }, []);
   const { t } = useTranslation();
@@ -79,9 +85,12 @@ const AddCoursePage: React.FC = () => {
   const router = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string>(
-    'http://res.cloudinary.com/dqzfbcoia/image/upload/v1706239830/oyxj83oafi659dth0inv.jpg',
-  );
+  const [imageUrl, setImageUrl] = useState<string>();
+
+  const fetchCourseGroup = async () => {
+    const response = await getCourseGroups({ page: 1, take: 50 });
+    setCourseGroupOption(response.data.map((courseGroup) => ({ value: courseGroup.id, label: courseGroup.name })));
+  };
 
   const handleChange: UploadProps['onChange'] = (info) => {
     if (info.file.status === 'uploading') {
@@ -89,61 +98,98 @@ const AddCoursePage: React.FC = () => {
       return;
     }
     if (info.file.status === 'done') {
-      getBase64(info.file.originFileObj as any, (url) => {
+      getBase64(info.file.originFileObj as File, (url) => {
         setLoading(false);
         setImageUrl(url);
       });
     }
   };
 
-  const onFinish = async (values: AddUserRequest) => {
-    console.log(values);
-    console.log(imageUrl);
+  const onFinish = async (values: any) => {
+    setIsLoading(true);
+    const addCoursePayload: AddCourseRequest = {
+      name: values.name,
+      description: values.description,
+      target: values.target,
+      guideline: values.guideline,
+      duration: values.duration,
+      banner: values?.banner?.[0]?.response?.url || imageUrl,
+      level: values.level,
+      status: values.status,
+      teacherId: values.teacherId,
+      courseGroupId: values.courseGroupId || 0,
+      category: values.category,
+      price: values.price,
+      discount: values.discount,
+      timeDiscountStart: values.timeDiscount[0].toISOString(),
+      timeDiscountEnd: values.timeDiscount[1].toISOString(),
+    };
 
-    // setIsLoading(true);
-    // const addUserPayload: AddUserRequest = {
-    //   email: values.email,
-    //   firstName: values.firstName,
-    //   lastName: values.lastName,
-    //   phoneNumber: values.phoneNumber,
-    //   password: values.password,
-    //   role: values.role,
-    //   isVerify: values.isVerify,
-    //   EXP: values.EXP,
-    // };
-    // if (router.id) {
-    //   const data = await updateUser(+router.id, addUserPayload);
-    //   if (data?.id) {
-    //     notificationController.success({ message: t('common.success') });
-    //     setIsLoading(false);
-    //     setFieldsChanged(false);
-    //   }
-    //   return;
-    // }
-    // const data = await addUser(addUserPayload);
-    // if (data?.id) {
-    //   notificationController.success({ message: t('common.success') });
-    //   navigate('/users/list');
-    // }
-    // setIsLoading(false);
-    // setFieldsChanged(false);
+    if (router.id) {
+      const data = await updateCourse(+router.id, addCoursePayload);
+      if (data?.id) {
+        notificationController.success({ message: t('common.success') });
+        setIsLoading(false);
+        setFieldsChanged(false);
+      }
+      return;
+    }
+    const data = await addCourse(addCoursePayload);
+    if (data?.id) {
+      notificationController.success({ message: t('common.success') });
+      navigate('/courses/list');
+    }
+    setIsLoading(false);
+    setFieldsChanged(false);
   };
 
-  // useEffect(() => {
-  //   const id = router.id;
-  //   const fetchUser = async (id: number) => {
-  //     const data = await getUser(id);
-  //     form.setFieldsValue({
-  //       ...data,
-  //       password: '',
-  //     });
-  //   };
-  //   if (id) {
-  //     fetchUser(+id);
-  //   } else {
-  //     form.setFieldsValue({ ...initialValues });
-  //   }
-  // }, [router, form, initialValues]);
+  const handleOk = () => {
+    courseGroupForm
+      .validateFields()
+      .then(async (values) => {
+        console.log(values);
+        setConfirmLoading(true);
+        const addCourseGroupPayload: AddCourseGroupRequest = {
+          name: values.name,
+          description: values.description,
+          authorId: values.authorId,
+        };
+        const data = await addCourseGroup(addCourseGroupPayload);
+        if (data?.id) {
+          notificationController.success({ message: t('common.success') });
+        } else {
+          notificationController.error({ message: 'Add course group failed' });
+        }
+        setOpenModalCourseGroup(false);
+        setConfirmLoading(false);
+        fetchCourseGroup();
+        courseGroupForm.resetFields();
+      })
+      .catch((info) => {
+        notificationController.error({ message: info });
+      });
+  };
+
+  useEffect(() => {
+    const id = router.id;
+    const fetchUser = async (id: number) => {
+      const data = await getCourse(id);
+      form.setFieldsValue({
+        ...data,
+        banner: undefined,
+        timeDiscount: [moment(data.timeDiscountStart), moment(data.timeDiscountEnd)],
+        teacherId: data?.teacher?.id,
+        courseGroupId: data?.courseGroup?.id,
+      });
+      setImageUrl(data.banner);
+    };
+    if (id) {
+      fetchUser(+id);
+    } else {
+      form.resetFields();
+      setImageUrl(undefined);
+    }
+  }, [router, form, initialValues]);
   useEffect(() => {
     const fetchUser = async () => {
       const response = await getUsers({ page: 1, take: 50 });
@@ -153,15 +199,63 @@ const AddCoursePage: React.FC = () => {
       );
     };
     fetchUser();
-    const fetchCourseGroup = async () => {
-      const response = await getCourseGroups({ page: 1, take: 50 });
-      setCourseGroupOption(response.data.map((courseGroup) => ({ value: courseGroup.id, label: courseGroup.name })));
-    };
     fetchCourseGroup();
   }, []);
   return (
     <>
       <PageTitle>{router.id ? 'Edit Course Page' : 'Add Course Page'}</PageTitle>
+      <Modal
+        open={openModalCourseGroup}
+        title="Create a new course group"
+        okText="Create"
+        cancelText="Cancel"
+        onCancel={() => setOpenModalCourseGroup(false)}
+        onOk={handleOk}
+        confirmLoading={confirmLoading}
+      >
+        <Form form={courseGroupForm} layout="vertical" name="form_in_modal">
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[
+              {
+                required: true,
+                message: 'Name is require',
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[
+              {
+                required: true,
+                message: 'Description is require',
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <BaseButtonsForm.Item
+            name="authorId"
+            label={'Teacher'}
+            hasFeedback
+            rules={[{ required: true, message: 'Teacher is require' }]}
+          >
+            <BaseSelect
+              showSearch
+              placeholder="Select teacher"
+              filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').includes(input?.toLowerCase())}
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={teacherOption}
+            />
+          </BaseButtonsForm.Item>
+        </Form>
+      </Modal>
       <BaseRow gutter={[30, 30]}>
         <BaseCol xs={24} sm={24} xl={24}>
           <BaseCard id="validation form" title={router.id ? 'Edit Course' : 'Add Course'} padding="1.25rem">
@@ -199,7 +293,7 @@ const AddCoursePage: React.FC = () => {
                   onChange={handleChange}
                 >
                   {imageUrl ? (
-                    <img src={imageUrl} alt="avatar" style={{ width: '100%' }} />
+                    <img src={imageUrl} alt="avatar" style={{ maxWidth: '500px', borderRadius: '20px' }} />
                   ) : (
                     <BaseButton type="default" icon={loading ? <LoadingOutlined /> : <UploadOutlined />}>
                       {t('forms.validationFormLabels.clickToUpload')}
@@ -210,25 +304,28 @@ const AddCoursePage: React.FC = () => {
               <BaseForm.Item name="name" label={'Name'} rules={[{ required: true, message: 'Name is required' }]}>
                 <BaseInput />
               </BaseForm.Item>
-              <BaseButtonsForm.Item
-                label={'Duration'}
-                rules={[
-                  { required: true, message: 'Duration is required' },
-                  {
-                    type: 'number',
-                    message: 'Duration must be number',
-                  },
-                ]}
-              >
-                <label>
-                  <BaseButtonsForm.Item name="duration" noStyle>
-                    <InputNumber min={0} />
-                  </BaseButtonsForm.Item>
-                </label>
-                <span> {'minutes'}</span>
-              </BaseButtonsForm.Item>
+
               <BaseRow gutter={[30, 30]} style={{ width: '100%' }}>
-                <BaseCol xs={24} sm={8} xl={8}>
+                <BaseCol xs={24} sm={6} xl={6}>
+                  <BaseButtonsForm.Item
+                    label={'Duration'}
+                    rules={[
+                      { required: true, message: 'Duration is required' },
+                      {
+                        type: 'number',
+                        message: 'Duration must be number',
+                      },
+                    ]}
+                  >
+                    <label>
+                      <BaseButtonsForm.Item name="duration" noStyle>
+                        <InputNumber min={0} />
+                      </BaseButtonsForm.Item>
+                    </label>
+                    <span> {'minutes'}</span>
+                  </BaseButtonsForm.Item>
+                </BaseCol>
+                <BaseCol xs={24} sm={9} xl={9}>
                   <BaseButtonsForm.Item
                     name="teacherId"
                     label={'Teacher'}
@@ -248,7 +345,7 @@ const AddCoursePage: React.FC = () => {
                     />
                   </BaseButtonsForm.Item>
                 </BaseCol>
-                <BaseCol xs={24} sm={8} xl={8}>
+                <BaseCol xs={24} sm={9} xl={9}>
                   <BaseButtonsForm.Item name="courseGroupId" label={'Course Group'} hasFeedback>
                     <BaseSelect
                       showSearch
@@ -260,6 +357,17 @@ const AddCoursePage: React.FC = () => {
                         (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())
                       }
                       options={courseGroupOption}
+                      dropdownRender={(menu) => (
+                        <>
+                          {menu}
+                          <Divider style={{ margin: '8px 0' }} />
+                          <Space>
+                            <Button type="text" icon={<PlusOutlined />} onClick={() => setOpenModalCourseGroup(true)}>
+                              Add new course group
+                            </Button>
+                          </Space>
+                        </>
+                      )}
                     />
                   </BaseButtonsForm.Item>
                 </BaseCol>
@@ -405,7 +513,7 @@ const AddCoursePage: React.FC = () => {
                 label={'Guideline'}
                 rules={[{ required: true, message: 'Guideline is required' }]}
               >
-                <Input.TextArea placeholder="Guideline to the students" autoSize={{ minRows: 2, maxRows: 6 }} />
+                <Input.TextArea autoSize={{ minRows: 4, maxRows: 7 }} />
               </BaseForm.Item>
               <BaseRow gutter={[30, 30]}>
                 <BaseCol xs={24} sm={8} xl={8}>

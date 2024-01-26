@@ -179,13 +179,8 @@ const UserListPage: React.FC = () => {
       render: (text, record) => {
         return (
           <BaseSpace>
-            <BaseButton
-              type="ghost"
-              // onClick={() => {
-              //   notificationController.info({ message: t('tables.inviteMessage', { name: record.id }) });
-              // }}
-            >
-              <Link to={`/users/detail/${record.id}`}>{'View'}</Link>
+            <BaseButton type="ghost">
+              <Link to={`/users/detail/${record.id}`}>{'Edit'}</Link>
             </BaseButton>
             {record.role !== 'ADMIN' && (
               <BaseButton type="default" danger onClick={() => handleDeleteRow(record.id)}>

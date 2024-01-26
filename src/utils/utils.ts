@@ -79,6 +79,21 @@ export const defineColorByRole = (role: string): string => {
   }
 };
 
+export const defineColorByStatus = (status: string): string => {
+  switch (status) {
+    case 'PENDING':
+      return 'var(--primary-color)';
+    case 'APPROVED':
+      return 'var(--success-color)';
+    case 'DRAFT':
+      return 'var(--warning-color)';
+    case 'REJECTED':
+      return 'var(--error-color)';
+    default:
+      return 'var(--success-color)';
+  }
+};
+
 export const defineColorBySeverity = (severity: NotificationType | undefined, rgb = false): string => {
   const postfix = rgb ? 'rgb-color' : 'color';
   switch (severity) {
