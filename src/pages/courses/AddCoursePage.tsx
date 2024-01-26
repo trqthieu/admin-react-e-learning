@@ -22,6 +22,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import moment from 'moment';
+import { Link } from 'react-router-dom';
 const { RangePicker } = DatePicker;
 
 const formItemLayout = {
@@ -259,6 +260,18 @@ const AddCoursePage: React.FC = () => {
       <BaseRow gutter={[30, 30]}>
         <BaseCol xs={24} sm={24} xl={24}>
           <BaseCard id="validation form" title={router.id ? 'Edit Course' : 'Add Course'} padding="1.25rem">
+            {router.id && (
+              <BaseButton
+                style={{
+                  position: 'absolute',
+                  top: 20,
+                  right: 20,
+                }}
+                type="default"
+              >
+                <Link to={'sections'}>Manage course sections</Link>
+              </BaseButton>
+            )}
             <BaseButtonsForm
               {...formItemLayout}
               isFieldsChanged={isFieldsChanged}
