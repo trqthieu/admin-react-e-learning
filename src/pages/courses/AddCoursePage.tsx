@@ -330,12 +330,14 @@ const AddCoursePage: React.FC = () => {
                       },
                     ]}
                   >
-                    <label>
-                      <BaseButtonsForm.Item name="duration" noStyle>
-                        <InputNumber min={0} />
-                      </BaseButtonsForm.Item>
-                    </label>
-                    <span> {'minutes'}</span>
+                    <>
+                      <label>
+                        <BaseButtonsForm.Item name="duration" noStyle>
+                          <InputNumber min={0} />
+                        </BaseButtonsForm.Item>
+                      </label>
+                      <span> {'minutes'}</span>
+                    </>
                   </BaseButtonsForm.Item>
                 </BaseCol>
                 <BaseCol xs={24} sm={9} xl={9}>
@@ -541,12 +543,14 @@ const AddCoursePage: React.FC = () => {
                       },
                     ]}
                   >
-                    <label>
-                      <BaseButtonsForm.Item name="price" noStyle>
-                        <InputNumber min={0} />
-                      </BaseButtonsForm.Item>
-                    </label>
-                    <span> {'$'}</span>
+                    <>
+                      <label>
+                        <BaseButtonsForm.Item name="price" noStyle>
+                          <InputNumber min={0} />
+                        </BaseButtonsForm.Item>
+                      </label>
+                      <span> {'$'}</span>
+                    </>
                   </BaseButtonsForm.Item>
                 </BaseCol>
                 <BaseCol xs={24} sm={8} xl={8}>
@@ -561,12 +565,14 @@ const AddCoursePage: React.FC = () => {
                       },
                     ]}
                   >
-                    <label>
-                      <BaseButtonsForm.Item name="discount" noStyle>
-                        <InputNumber min={0} max={100} />
-                      </BaseButtonsForm.Item>
-                    </label>
-                    <span> {'%'}</span>
+                    <>
+                      <label>
+                        <BaseButtonsForm.Item name="discount" noStyle>
+                          <InputNumber min={0} max={100} />
+                        </BaseButtonsForm.Item>
+                      </label>
+                      <span> {'%'}</span>
+                    </>
                   </BaseButtonsForm.Item>
                 </BaseCol>
                 <BaseCol xs={24} sm={8} xl={8}>

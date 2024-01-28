@@ -1,28 +1,55 @@
+import { ExclamationCircleFilled, MenuOutlined } from '@ant-design/icons';
+import {
+  AddCourseSectionRequest,
+  CourseSectionResponse,
+  addCourseSection,
+  deleteCourseSection,
+  getCourseSections,
+  updateCourseSection,
+} from '@app/api/course-section.api';
 import { BaseButton } from '@app/components/common/BaseButton/BaseButton';
 import { BaseCard } from '@app/components/common/BaseCard/BaseCard';
-import { BasePopconfirm } from '@app/components/common/BasePopconfirm/BasePopconfirm';
 import { BaseSpace } from '@app/components/common/BaseSpace/BaseSpace';
 import { BaseTable } from '@app/components/common/BaseTable/BaseTable';
 import { BaseForm } from '@app/components/common/forms/BaseForm/BaseForm';
-import { EditableCell } from '@app/components/tables/editableTable/EditableCell';
+import { BaseInput } from '@app/components/common/inputs/BaseInput/BaseInput';
+import { notificationController } from '@app/controllers/notificationController';
 import { useMounted } from '@app/hooks/useMounted';
-import { BasicTableRow, Pagination, getEditableTableData } from 'api/table.api';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Form, Modal } from 'antd';
+import { ColumnsType } from 'antd/lib/table';
+import { Pagination } from 'api/table.api';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
-
+const { confirm } = Modal;
 const initialPagination: Pagination = {
   current: 1,
-  pageSize: 4,
+  pageSize: 50,
 };
+
+interface DataType extends CourseSectionResponse {
+  key: number;
+}
 const ListCourseSectionPage: React.FC = () => {
-  const [form] = BaseForm.useForm();
-  const [tableData, setTableData] = useState<{ data: BasicTableRow[]; pagination: Pagination; loading: boolean }>({
+  const [courseSectionForm] = BaseForm.useForm();
+  const [editForm] = BaseForm.useForm();
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [openModalCourseSection, setOpenModalCourseSection] = useState(false);
+  const [openModalEdit, setOpenModalEdit] = useState(false);
+  const [tableData, setTableData] = useState<{
+    data: DataType[];
+    pagination: Pagination;
+    loading: boolean;
+  }>({
     data: [],
     pagination: initialPagination,
     loading: false,
   });
-  const [editingKey, setEditingKey] = useState(0);
+
   const { t } = useTranslation();
   const { isMounted } = useMounted();
   const router = useParams();
@@ -30,9 +57,20 @@ const ListCourseSectionPage: React.FC = () => {
   const fetch = useCallback(
     (pagination: Pagination) => {
       setTableData((tableData) => ({ ...tableData, loading: true }));
-      getEditableTableData(pagination).then((res) => {
+      getCourseSections({
+        page: pagination.current,
+        take: pagination.pageSize,
+      }).then((res) => {
         if (isMounted.current) {
-          setTableData({ data: res.data, pagination: res.pagination, loading: false });
+          setTableData({
+            data: res.data.sort((a, b) => a.order - b.order).map((item) => ({ ...item, key: item.id })),
+            pagination: {
+              current: res.meta.page,
+              pageSize: res.meta.take,
+              total: res.meta.totalItem,
+            },
+            loading: false,
+          });
         }
       });
     },
@@ -43,115 +81,180 @@ const ListCourseSectionPage: React.FC = () => {
     fetch(initialPagination);
   }, [fetch]);
 
-  const handleTableChange = (pagination: Pagination) => {
-    fetch(pagination);
-    cancel();
-  };
-
-  const isEditing = (record: BasicTableRow) => record.key === editingKey;
-
-  const edit = (record: Partial<BasicTableRow> & { key: React.Key }) => {
-    form.setFieldsValue({ name: '', age: '', address: '', ...record });
-    setEditingKey(record.key);
-  };
-
-  const cancel = () => {
-    setEditingKey(0);
-  };
-
-  const save = async (key: React.Key) => {
-    try {
-      const row = (await form.validateFields()) as BasicTableRow;
-
-      const newData = [...tableData.data];
-      const index = newData.findIndex((item) => key === item.key);
-      if (index > -1) {
-        const item = newData[index];
-        newData.splice(index, 1, {
-          ...item,
-          ...row,
-        });
-      } else {
-        newData.push(row);
-      }
-      setTableData({ ...tableData, data: newData });
-      setEditingKey(0);
-    } catch (errInfo) {
-      console.log('Validate Failed:', errInfo);
-    }
-  };
-
   const handleDeleteRow = (rowId: number) => {
-    setTableData({ ...tableData, data: tableData.data.filter((item) => item.key !== rowId) });
+    confirm({
+      title: 'Are you sure delete this course section?',
+      icon: <ExclamationCircleFilled />,
+      content: 'Some descriptions',
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        setTableData({ ...tableData, loading: true });
+        deleteCourseSection(rowId).then((res) => {
+          if (res.affected) {
+            fetch(initialPagination);
+            notificationController.success({ message: 'Delete course section successfully' });
+          }
+        });
+      },
+    });
   };
 
-  const columns = [
+  const handleOk = () => {
+    const theLastSection = tableData.data[tableData.data.length - 1];
+    courseSectionForm
+      .validateFields()
+      .then(async (values) => {
+        setConfirmLoading(true);
+        const addCourseSectionPayload: AddCourseSectionRequest = {
+          title: values.title,
+          description: values.description,
+          courseId: router?.id ? +router?.id : 0,
+          order: theLastSection ? theLastSection.order + 1 : 0,
+        };
+        const data = await addCourseSection(addCourseSectionPayload);
+        if (data?.id) {
+          notificationController.success({ message: t('common.success') });
+        } else {
+          notificationController.error({ message: 'Add course section failed' });
+        }
+        setOpenModalCourseSection(false);
+        setConfirmLoading(false);
+        fetch(initialPagination);
+        courseSectionForm.resetFields();
+      })
+      .catch((info) => {
+        notificationController.error({ message: info });
+      });
+  };
+  const handleEditOk = () => {
+    editForm
+      .validateFields()
+      .then(async (values) => {
+        setConfirmLoading(true);
+        const editCourseSectionPayload: AddCourseSectionRequest = {
+          title: values.title,
+          description: values.description,
+          courseId: values.courseId,
+          order: values.order,
+        };
+        const data = await updateCourseSection(values.id, editCourseSectionPayload);
+        if (data?.id) {
+          notificationController.success({ message: t('common.success') });
+        } else {
+          notificationController.error({ message: 'Update course section failed' });
+        }
+        setOpenModalEdit(false);
+        setConfirmLoading(false);
+        fetch(initialPagination);
+        editForm.resetFields();
+      })
+      .catch((info) => {
+        notificationController.error({ message: info });
+      });
+  };
+
+  const columns: ColumnsType<DataType> = [
     {
-      title: t('common.name'),
-      dataIndex: 'name',
-      width: '25%',
-      editable: true,
+      key: 'sort',
     },
     {
-      title: t('common.age'),
-      dataIndex: 'age',
-      width: '15%',
-      editable: true,
+      title: 'No.',
+      dataIndex: 'order',
+      render(value, record, index) {
+        return <span>{record.order + 1}</span>;
+      },
     },
     {
-      title: t('common.address'),
-      dataIndex: 'address',
-      width: '30%',
-      editable: true,
+      title: 'Title',
+      dataIndex: 'title',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
     },
     {
       title: t('tables.actions'),
       dataIndex: 'actions',
       width: '15%',
-      render: (text: string, record: BasicTableRow) => {
-        const editable = isEditing(record);
+      render: (text, record) => {
         return (
           <BaseSpace>
-            {editable ? (
-              <>
-                <BaseButton type="primary" onClick={() => save(record.key)}>
-                  {t('common.save')}
-                </BaseButton>
-                <BasePopconfirm title={t('tables.cancelInfo')} onConfirm={cancel}>
-                  <BaseButton type="ghost">{t('common.cancel')}</BaseButton>
-                </BasePopconfirm>
-              </>
-            ) : (
-              <>
-                <BaseButton type="ghost" disabled={editingKey !== 0} onClick={() => edit(record)}>
-                  {t('common.edit')}
-                </BaseButton>
-                <BaseButton type="default" danger onClick={() => handleDeleteRow(record.key)}>
-                  {t('tables.delete')}
-                </BaseButton>
-              </>
-            )}
+            <BaseButton type="ghost" onClick={() => handleEdit(record)}>
+              {'Edit'}
+            </BaseButton>
+            <BaseButton type="default" danger onClick={() => handleDeleteRow(record.id)}>
+              {'Delete'}
+            </BaseButton>
           </BaseSpace>
         );
       },
     },
   ];
 
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record: BasicTableRow) => ({
-        record,
-        inputType: col.dataIndex === 'age' ? 'number' : 'text',
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record),
-      }),
+  const handleAdd = () => {
+    setOpenModalCourseSection(true);
+  };
+
+  const handleEdit = (record: DataType) => {
+    setOpenModalEdit(true);
+    editForm.setFieldsValue({
+      id: record.id,
+      title: record.title,
+      description: record.description,
+      order: record.order,
+      courseId: record.course.id,
+    });
+  };
+
+  interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+    'data-row-key': string;
+  }
+
+  const Row = ({ children, ...props }: RowProps) => {
+    const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+      id: props['data-row-key'],
+    });
+
+    const style: React.CSSProperties = {
+      ...props.style,
+      transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),
+      transition,
+      ...(isDragging ? { position: 'relative', zIndex: 9999 } : {}),
     };
-  });
+
+    return (
+      <tr {...props} ref={setNodeRef} style={style} {...attributes}>
+        {React.Children.map(children, (child) => {
+          if ((child as React.ReactElement).key === 'sort') {
+            return React.cloneElement(child as React.ReactElement, {
+              children: (
+                <MenuOutlined
+                  ref={setActivatorNodeRef}
+                  style={{ touchAction: 'none', cursor: 'move' }}
+                  {...listeners}
+                />
+              ),
+            });
+          }
+          return child;
+        })}
+      </tr>
+    );
+  };
+
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (active.id !== over?.id) {
+      console.log(active.id);
+      console.log(over?.id);
+      // setDataSource((previous) => {
+      //   const activeIndex = previous.findIndex((i) => i.key === active.id);
+      //   const overIndex = previous.findIndex((i) => i.key === over?.id);
+      //   return arrayMove(previous, activeIndex, overIndex);
+      // });
+    }
+  };
 
   return (
     <BaseCard id="validation form" title={'Course sections'} padding="1.25rem">
@@ -165,26 +268,106 @@ const ListCourseSectionPage: React.FC = () => {
       >
         <Link to={`/courses/detail/${router.id}`}>Back to course</Link>
       </BaseButton>
-      <BaseForm form={form} component={false}>
-        <BaseTable
-          components={{
-            body: {
-              cell: EditableCell,
-            },
-          }}
-          bordered
-          dataSource={tableData.data}
-          columns={mergedColumns}
-          rowClassName="editable-row"
-          // pagination={{
-          //   ...tableData.pagination,
-          //   onChange: cancel,
-          // }}
-          onChange={handleTableChange}
-          loading={tableData.loading}
-          scroll={{ x: 800 }}
-        />
-      </BaseForm>
+      <BaseButton onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
+        Add a new course section
+      </BaseButton>
+      <Modal
+        open={openModalCourseSection}
+        title="Create a new course section"
+        okText="Create"
+        cancelText="Cancel"
+        onCancel={() => setOpenModalCourseSection(false)}
+        onOk={handleOk}
+        confirmLoading={confirmLoading}
+      >
+        <Form form={courseSectionForm} layout="vertical" name="form_in_modal">
+          <Form.Item
+            name="title"
+            label="Title"
+            rules={[
+              {
+                required: true,
+                message: 'Title is require',
+              },
+            ]}
+          >
+            <BaseInput />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[
+              {
+                required: true,
+                message: 'Description is require',
+              },
+            ]}
+          >
+            <BaseInput />
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        open={openModalEdit}
+        title="Edit course section"
+        okText="Edit"
+        cancelText="Cancel"
+        onCancel={() => setOpenModalEdit(false)}
+        onOk={handleEditOk}
+        confirmLoading={confirmLoading}
+      >
+        <Form form={editForm} layout="vertical" name="form_in_modal">
+          <Form.Item name="id" label="id" hidden>
+            <BaseInput />
+          </Form.Item>
+          <Form.Item
+            name="title"
+            label="Title"
+            rules={[
+              {
+                required: true,
+                message: 'Title is require',
+              },
+            ]}
+          >
+            <BaseInput />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[
+              {
+                required: true,
+                message: 'Description is require',
+              },
+            ]}
+          >
+            <BaseInput />
+          </Form.Item>
+          <Form.Item name="order" label="Order" hidden>
+            <BaseInput />
+          </Form.Item>
+          <Form.Item name="courseId" label="courseId" hidden>
+            <BaseInput />
+          </Form.Item>
+        </Form>
+      </Modal>
+      <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
+        <SortableContext items={tableData.data.map((i) => i.key)} strategy={verticalListSortingStrategy}>
+          <BaseTable
+            bordered
+            components={{
+              body: {
+                row: Row,
+              },
+            }}
+            rowKey="key"
+            columns={columns}
+            dataSource={tableData.data}
+            loading={tableData.loading}
+          />
+        </SortableContext>
+      </DndContext>
     </BaseCard>
   );
 };
