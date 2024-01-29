@@ -186,11 +186,11 @@ const DetailCourseLessonPage: React.FC = () => {
         return (
           <BaseSpace>
             <BaseButton type="ghost">
-              <Link to={`${record.id}`}>{'View'}</Link>
+              <Link to={`lessons/${record.id}`}>{'View'}</Link>
             </BaseButton>
-            <BaseButton type="ghost" onClick={() => handleEdit(record)}>
+            {/* <BaseButton type="ghost" onClick={() => handleEdit(record)}>
               {'Edit'}
-            </BaseButton>
+            </BaseButton> */}
             <BaseButton type="default" danger onClick={() => handleDeleteRow(record.id)}>
               {'Delete'}
             </BaseButton>

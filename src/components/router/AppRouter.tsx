@@ -171,6 +171,7 @@ export const AppRouter: React.FC = () => {
                   <Route path=":unitId">
                     <Route path="" element={<DetailCourseUnit />} />
                     <Route path="lessons/create" element={<AddLesson />} />
+                    <Route path="lessons/:lessonId" element={<AddLesson />} />
                   </Route>
 
                   <Route path="" element={<ListCourseUnit />} />

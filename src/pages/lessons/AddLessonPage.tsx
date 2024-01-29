@@ -1,6 +1,12 @@
 import { InboxOutlined, LoadingOutlined, UploadOutlined } from '@ant-design/icons';
-import { AddCourseGroupRequest, addCourseGroup, getCourseGroups } from '@app/api/course-group.api';
-import { AddCourseRequest, addCourse, getCourse, updateCourse } from '@app/api/courses.api';
+import {
+  AddCourseLessonRequest,
+  CourseLessonResponse,
+  addCourseLesson,
+  getCourseLesson,
+  getCourseLessons,
+} from '@app/api/course-lesson.api';
+import { getCourse } from '@app/api/courses.api';
 import { getUsers } from '@app/api/users.api';
 import { BaseButton } from '@app/components/common/BaseButton/BaseButton';
 import { BaseCard } from '@app/components/common/BaseCard/BaseCard';
@@ -11,17 +17,16 @@ import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { BaseButtonsForm } from '@app/components/common/forms/BaseButtonsForm/BaseButtonsForm';
 import { BaseForm } from '@app/components/common/forms/BaseForm/BaseForm';
 import { BaseInput } from '@app/components/common/inputs/BaseInput/BaseInput';
-import { BaseSelect } from '@app/components/common/selects/BaseSelect/BaseSelect';
 import { BACKEND_BASE_URL } from '@app/constants/config/api';
+import { beforeUploadDocument, beforeUploadImage, beforeUploadVideo } from '@app/constants/config/upload';
 import { notificationController } from '@app/controllers/notificationController';
 import type { UploadProps } from 'antd';
-import { DatePicker, Form, Input, Modal, message } from 'antd';
+import { Input } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import moment from 'moment';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-const { RangePicker } = DatePicker;
 
 const formItemLayout = {
   labelCol: { span: 24 },
@@ -41,42 +46,24 @@ const getBase64 = (img: File, callback: (url: string) => void) => {
   reader.readAsDataURL(img);
 };
 
-const beforeUpload = (file: File) => {
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-  if (!isJpgOrPng) {
-    message.error('You can only upload JPG/PNG file!');
-  }
-  const isLt2M = file.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    message.error('Image must smaller than 2MB!');
-  }
-  return isJpgOrPng && isLt2M;
-};
-
 const AddLessonPage: React.FC = () => {
   const [isFieldsChanged, setFieldsChanged] = useState(false);
+  const [lessonList, setLessonList] = useState<Array<CourseLessonResponse>>([]);
+  console.log('lessonList', lessonList);
+
   const [form] = useForm();
-  const [courseGroupForm] = useForm();
-  const [teacherOption, setTeacherOption] = useState<Array<{ value: number; label: string }>>([]);
-  const [courseGroupOption, setCourseGroupOption] = useState<Array<{ value: number; label: string }>>([]);
-  const [openModalCourseGroup, setOpenModalCourseGroup] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
   const initialValues = useMemo(() => {
     return {
-      name: '',
-      banner: undefined,
-      teacherId: undefined,
-      courseGroupId: undefined,
-      category: 'OTHERS',
-      discount: 0,
-      duration: 0,
-      level: 'A1',
-      price: 0,
-      status: 'DRAFT',
-      description: [],
-      target: [],
-      guideline: '',
-      timeDiscount: [],
+      title: '',
+      // banner: 'http://res.cloudinary.com/dqzfbcoia/image/upload/v1706546211/dvt3ccbdfqhcktvfe8s9.jpg',
+      description: '',
+      content: '',
+      // video:
+      //   'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/eb3aca17-3b69-4bea-ac34-26bd7523c4ca-movie-app.mp4?alt=media',
+      // attachments: [
+      //   'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/85a41ec6-dfcf-4eb9-ae7f-b9672356fb6b-e-learning.pdf?alt=media',
+      //   'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/c3a609f2-3b8b-4151-a5e3-533ba588a899-ImprovingPerformanceAndroid.pptx?alt=media',
+      // ],
     };
   }, []);
   const { t } = useTranslation();
@@ -85,13 +72,21 @@ const AddLessonPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>();
+  const [videoUrl, setVideoUrl] = useState<string>();
+  console.log('videoUrl', videoUrl);
 
-  const fetchCourseGroup = async () => {
-    const response = await getCourseGroups({ page: 1, take: 50 });
-    setCourseGroupOption(response.data.map((courseGroup) => ({ value: courseGroup.id, label: courseGroup.name })));
-  };
+  const fetchLesson = useCallback(async (unitId: number) => {
+    const data = await getCourseLessons({ courseUnitId: unitId, page: 1, take: 50 });
+    setLessonList(data.data.sort((a, b) => a.order - b.order));
+  }, []);
 
-  const handleChange: UploadProps['onChange'] = (info) => {
+  useEffect(() => {
+    if (router.unitId) {
+      fetchLesson(+router.unitId);
+    }
+  }, []);
+
+  const handleChangeImage: UploadProps['onChange'] = (info) => {
     if (info.file.status === 'uploading') {
       setLoading(true);
       return;
@@ -105,27 +100,20 @@ const AddLessonPage: React.FC = () => {
   };
 
   const onFinish = async (values: any) => {
-    console.log('values', values);
+    console.log(values);
 
     // setIsLoading(true);
-    // const addCoursePayload: AddCourseRequest = {
-    //   name: values.name,
+    // const theLastLesson = lessonList[lessonList.length - 1];
+    // const addLessonPayload: AddCourseLessonRequest = {
+    //   title: values.title,
     //   description: values.description,
-    //   target: values.target,
-    //   guideline: values.guideline,
-    //   duration: values.duration,
+    //   content: values.content,
     //   banner: values?.banner?.[0]?.response?.url || imageUrl,
-    //   level: values.level,
-    //   status: values.status,
-    //   teacherId: values.teacherId,
-    //   courseGroupId: values.courseGroupId || 0,
-    //   category: values.category,
-    //   price: values.price,
-    //   discount: values.discount,
-    //   timeDiscountStart: values.timeDiscount[0].toISOString(),
-    //   timeDiscountEnd: values.timeDiscount[1].toISOString(),
+    //   courseUnitId: router?.unitId ? +router?.unitId : 0,
+    //   video: values?.video?.[0]?.response?.url,
+    //   attachments: values?.attachments?.map((attachment: any) => attachment?.response?.url),
+    //   order: theLastLesson ? theLastLesson.order + 1 : 0,
     // };
-
     // if (router.lessonId) {
     //   const data = await updateCourse(+router.lessonId, addCoursePayload);
     //   if (data?.id) {
@@ -135,128 +123,56 @@ const AddLessonPage: React.FC = () => {
     //   }
     //   return;
     // }
-    // const data = await addCourse(addCoursePayload);
+    // const data = await addCourseLesson(addLessonPayload);
     // if (data?.id) {
     //   notificationController.success({ message: t('common.success') });
-    //   navigate('/courses/list');
+    //   navigate(`/courses/detail/${router.courseId}/sections/${router.sectionId}/units/${router.unitId}`);
     // }
     // setIsLoading(false);
     // setFieldsChanged(false);
   };
 
-  const handleOk = () => {
-    courseGroupForm
-      .validateFields()
-      .then(async (values) => {
-        console.log(values);
-        setConfirmLoading(true);
-        const addCourseGroupPayload: AddCourseGroupRequest = {
-          name: values.name,
-          description: values.description,
-          authorId: values.authorId,
-        };
-        const data = await addCourseGroup(addCourseGroupPayload);
-        if (data?.id) {
-          notificationController.success({ message: t('common.success') });
-        } else {
-          notificationController.error({ message: 'Add Lesson group failed' });
-        }
-        setOpenModalCourseGroup(false);
-        setConfirmLoading(false);
-        fetchCourseGroup();
-        courseGroupForm.resetFields();
-      })
-      .catch((info) => {
-        notificationController.error({ message: info });
-      });
-  };
-
   useEffect(() => {
     const id = router.lessonId;
-    const fetchUser = async (id: number) => {
-      const data = await getCourse(id);
+    const fetchLesson = async (id: number) => {
+      const data = await getCourseLesson(id);
       form.setFieldsValue({
-        ...data,
+        // ...data,
         banner: undefined,
-        timeDiscount: [moment(data.timeDiscountStart), moment(data.timeDiscountEnd)],
-        teacherId: data?.teacher?.id,
-        courseGroupId: data?.courseGroup?.id,
+        title: data.title,
+        description: data.description,
+        content: data.content,
+        video: [
+          {
+            name: 'Video',
+            url: 'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/b59093e2-b25f-4280-8aa3-61ef273d617b-movie-app.mp4?alt=media',
+          },
+        ],
+        attachments: [
+          {
+            name: 'Attachment 1',
+            url: 'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/85a41ec6-dfcf-4eb9-ae7f-b9672356fb6b-e-learning.pdf?alt=media',
+          },
+          {
+            name: 'Attachment 2',
+            url: 'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/c3a609f2-3b8b-4151-a5e3-533ba588a899-ImprovingPerformanceAndroid.pptx?alt=media',
+          },
+        ],
       });
       setImageUrl(data.banner);
+      setVideoUrl(data.video);
     };
     if (id) {
-      fetchUser(+id);
+      fetchLesson(+id);
     } else {
       form.resetFields();
       setImageUrl(undefined);
     }
-  }, [router, form, initialValues]);
-  useEffect(() => {
-    const fetchUser = async () => {
-      const response = await getUsers({ page: 1, take: 50 });
-      const teacherData = response.data.filter((user) => user.role === 'TEACHER');
-      setTeacherOption(
-        teacherData.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}` })),
-      );
-    };
-    fetchUser();
-    fetchCourseGroup();
   }, []);
+
   return (
     <>
       <PageTitle>{router.lessonId ? 'Edit Lesson Page' : 'Add Lesson Page'}</PageTitle>
-      <Modal
-        open={openModalCourseGroup}
-        title="Create a new course group"
-        okText="Create"
-        cancelText="Cancel"
-        onCancel={() => setOpenModalCourseGroup(false)}
-        onOk={handleOk}
-        confirmLoading={confirmLoading}
-      >
-        <Form form={courseGroupForm} layout="vertical" name="form_in_modal">
-          <Form.Item
-            name="name"
-            label="Name"
-            rules={[
-              {
-                required: true,
-                message: 'Name is require',
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="description"
-            label="Description"
-            rules={[
-              {
-                required: true,
-                message: 'Description is require',
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <BaseButtonsForm.Item
-            name="authorId"
-            label={'Teacher'}
-            hasFeedback
-            rules={[{ required: true, message: 'Teacher is require' }]}
-          >
-            <BaseSelect
-              showSearch
-              placeholder="Select teacher"
-              filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').includes(input?.toLowerCase())}
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())
-              }
-              options={teacherOption}
-            />
-          </BaseButtonsForm.Item>
-        </Form>
-      </Modal>
       <BaseRow gutter={[30, 30]}>
         <BaseCol xs={24} sm={24} xl={24}>
           <BaseCard id="validation form" title={router.lessonId ? 'Edit Lesson' : 'Add Lesson'} padding="1.25rem">
@@ -302,8 +218,8 @@ const AddLessonPage: React.FC = () => {
                   maxCount={1}
                   multiple={false}
                   showUploadList={false}
-                  beforeUpload={beforeUpload}
-                  onChange={handleChange}
+                  beforeUpload={beforeUploadImage}
+                  onChange={handleChangeImage}
                 >
                   {imageUrl ? (
                     <img src={imageUrl} alt="avatar" style={{ maxWidth: '500px', borderRadius: '20px' }} />
@@ -331,9 +247,25 @@ const AddLessonPage: React.FC = () => {
               >
                 <Input.TextArea autoSize={{ minRows: 4, maxRows: 7 }} />
               </BaseForm.Item>
+              <BaseButtonsForm.Item name="video" label={'Video'} valuePropName="fileList" getValueFromEvent={normFile}>
+                <BaseUpload
+                  name="file"
+                  action={`${BACKEND_BASE_URL}/files/upload-document`}
+                  listType="picture"
+                  beforeUpload={beforeUploadVideo}
+                >
+                  <BaseButton type="default" icon={<UploadOutlined />}>
+                    {t('forms.validationFormLabels.clickToUpload')}
+                  </BaseButton>
+                </BaseUpload>
+              </BaseButtonsForm.Item>
               <BaseButtonsForm.Item label={'Attachments'}>
                 <BaseButtonsForm.Item name="attachments" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
-                  <BaseUpload.Dragger name="file" action={`${BACKEND_BASE_URL}/files/upload-document`}>
+                  <BaseUpload.Dragger
+                    name="file"
+                    action={`${BACKEND_BASE_URL}/files/upload-document`}
+                    beforeUpload={beforeUploadDocument}
+                  >
                     <p>
                       <InboxOutlined />
                     </p>

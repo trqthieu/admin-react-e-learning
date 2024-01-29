@@ -54,7 +54,6 @@ const ListCourseUnitPage: React.FC = () => {
   const { t } = useTranslation();
   const { isMounted } = useMounted();
   const router = useParams();
-  console.log('router', router);
 
   const fetch = useCallback(
     (pagination: Pagination) => {

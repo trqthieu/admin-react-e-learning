@@ -72,6 +72,8 @@ const AddUserPage: React.FC = () => {
         setLoading(false);
         setFieldsChanged(false);
       }
+      setLoading(false);
+      setFieldsChanged(false);
       return;
     }
     const data = await addUser(addUserPayload);
