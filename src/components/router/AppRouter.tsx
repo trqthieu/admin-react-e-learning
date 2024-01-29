@@ -23,6 +23,9 @@ import ListCoursePage from '@app/pages/courses/ListCoursePage';
 import AddCourseGroupPage from '@app/pages/course-group/AddCourseGroupPage';
 import ListCourseGroupPage from '@app/pages/course-group/ListCourseGroupPage';
 import ListCourseSectionPage from '@app/pages/course-section/ListCourseSectionPage';
+import ListCourseUnitPage from '@app/pages/course-unit/ListCourseUnitPage';
+import DetailCourseUnitPage from '@app/pages/course-unit/DetailCourseUnitPage';
+import AddLessonPage from '@app/pages/lessons/AddLessonPage';
 
 const NewsFeedPage = React.lazy(() => import('@app/pages/NewsFeedPage'));
 const DataTablesPage = React.lazy(() => import('@app/pages/DataTablesPage'));
@@ -129,6 +132,9 @@ const UserList = withLoading(UserListPage);
 const AddCourse = withLoading(AddCoursePage);
 const ListCourse = withLoading(ListCoursePage);
 const ListCourseSection = withLoading(ListCourseSectionPage);
+const ListCourseUnit = withLoading(ListCourseUnitPage);
+const DetailCourseUnit = withLoading(DetailCourseUnitPage);
+const AddLesson = withLoading(AddLessonPage);
 const AddCourseGroup = withLoading(AddCourseGroupPage);
 const ListCourseGroup = withLoading(ListCourseGroupPage);
 
@@ -159,8 +165,18 @@ export const AppRouter: React.FC = () => {
           <Route path="courses">
             <Route path="add-course" element={<AddCourse />} />
             <Route path="list" element={<ListCourse />} />
-            <Route path="detail/:id">
-              <Route path="sections" element={<ListCourseSection />} />
+            <Route path="detail/:courseId">
+              <Route path="sections">
+                <Route path=":sectionId/units">
+                  <Route path=":unitId">
+                    <Route path="" element={<DetailCourseUnit />} />
+                    <Route path="lessons/create" element={<AddLesson />} />
+                  </Route>
+
+                  <Route path="" element={<ListCourseUnit />} />
+                </Route>
+                <Route path="" element={<ListCourseSection />} />
+              </Route>
               <Route path="" element={<AddCourse />} />
             </Route>
           </Route>

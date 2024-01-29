@@ -127,8 +127,8 @@ const AddCoursePage: React.FC = () => {
       timeDiscountEnd: values.timeDiscount[1].toISOString(),
     };
 
-    if (router.id) {
-      const data = await updateCourse(+router.id, addCoursePayload);
+    if (router.courseId) {
+      const data = await updateCourse(+router.courseId, addCoursePayload);
       if (data?.id) {
         notificationController.success({ message: t('common.success') });
         setIsLoading(false);
@@ -173,7 +173,7 @@ const AddCoursePage: React.FC = () => {
   };
 
   useEffect(() => {
-    const id = router.id;
+    const id = router.courseId;
     const fetchUser = async (id: number) => {
       const data = await getCourse(id);
       form.setFieldsValue({
@@ -205,7 +205,7 @@ const AddCoursePage: React.FC = () => {
   }, []);
   return (
     <>
-      <PageTitle>{router.id ? 'Edit Course Page' : 'Add Course Page'}</PageTitle>
+      <PageTitle>{router.courseId ? 'Edit Course Page' : 'Add Course Page'}</PageTitle>
       <Modal
         open={openModalCourseGroup}
         title="Create a new course group"
@@ -260,8 +260,8 @@ const AddCoursePage: React.FC = () => {
       </Modal>
       <BaseRow gutter={[30, 30]}>
         <BaseCol xs={24} sm={24} xl={24}>
-          <BaseCard id="validation form" title={router.id ? 'Edit Course' : 'Add Course'} padding="1.25rem">
-            {router.id && (
+          <BaseCard id="validation form" title={router.courseId ? 'Edit Course' : 'Add Course'} padding="1.25rem">
+            {router.courseId && (
               <BaseButton
                 style={{
                   position: 'absolute',

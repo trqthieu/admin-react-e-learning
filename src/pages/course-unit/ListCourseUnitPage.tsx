@@ -1,13 +1,13 @@
 import { ExclamationCircleFilled, MenuOutlined } from '@ant-design/icons';
 import {
-  AddCourseSectionRequest,
-  CourseSectionResponse,
-  addCourseSection,
-  changeOrderCourseSections,
-  deleteCourseSection,
-  getCourseSections,
-  updateCourseSection,
-} from '@app/api/course-section.api';
+  AddCourseUnitRequest,
+  CourseUnitResponse,
+  addCourseUnit,
+  changeOrderCourseUnits,
+  deleteCourseUnit,
+  getCourseUnits,
+  updateCourseUnit,
+} from '@app/api/course-unit.api';
 import { BaseButton } from '@app/components/common/BaseButton/BaseButton';
 import { BaseCard } from '@app/components/common/BaseCard/BaseCard';
 import { BaseSpace } from '@app/components/common/BaseSpace/BaseSpace';
@@ -32,14 +32,14 @@ const initialPagination: Pagination = {
   pageSize: 50,
 };
 
-interface DataType extends CourseSectionResponse {
+interface DataType extends CourseUnitResponse {
   key: number;
 }
-const ListCourseSectionPage: React.FC = () => {
-  const [courseSectionForm] = BaseForm.useForm();
+const ListCourseUnitPage: React.FC = () => {
+  const [courseUnitForm] = BaseForm.useForm();
   const [editForm] = BaseForm.useForm();
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [openModalCourseSection, setOpenModalCourseSection] = useState(false);
+  const [openModalCourseUnit, setOpenModalCourseUnit] = useState(false);
   const [openModalEdit, setOpenModalEdit] = useState(false);
   const [tableData, setTableData] = useState<{
     data: DataType[];
@@ -54,14 +54,15 @@ const ListCourseSectionPage: React.FC = () => {
   const { t } = useTranslation();
   const { isMounted } = useMounted();
   const router = useParams();
+  console.log('router', router);
 
   const fetch = useCallback(
     (pagination: Pagination) => {
       setTableData((tableData) => ({ ...tableData, loading: true }));
-      getCourseSections({
+      getCourseUnits({
         page: pagination.current,
         take: pagination.pageSize,
-        courseId: router?.courseId ? +router?.courseId : 0,
+        courseSectionId: router?.sectionId ? +router?.sectionId : 0,
       }).then((res) => {
         if (isMounted.current) {
           setTableData({
@@ -85,7 +86,7 @@ const ListCourseSectionPage: React.FC = () => {
 
   const handleDeleteRow = (rowId: number) => {
     confirm({
-      title: 'Are you sure delete this course section?',
+      title: 'Are you sure delete this course unit?',
       icon: <ExclamationCircleFilled />,
       content: 'Some descriptions',
       okText: 'Yes',
@@ -93,10 +94,10 @@ const ListCourseSectionPage: React.FC = () => {
       cancelText: 'No',
       onOk() {
         setTableData({ ...tableData, loading: true });
-        deleteCourseSection(rowId).then((res) => {
+        deleteCourseUnit(rowId).then((res) => {
           if (res?.affected) {
             fetch(initialPagination);
-            notificationController.success({ message: 'Delete course section successfully' });
+            notificationController.success({ message: 'Delete course unit successfully' });
           }
         });
       },
@@ -104,27 +105,27 @@ const ListCourseSectionPage: React.FC = () => {
   };
 
   const handleOk = () => {
-    const theLastSection = tableData.data[tableData.data.length - 1];
-    courseSectionForm
+    const theLastUnit = tableData.data[tableData.data.length - 1];
+    courseUnitForm
       .validateFields()
       .then(async (values) => {
         setConfirmLoading(true);
-        const addCourseSectionPayload: AddCourseSectionRequest = {
+        const addCourseUnitPayload: AddCourseUnitRequest = {
           title: values.title,
           description: values.description,
-          courseId: router?.courseId ? +router?.courseId : 0,
-          order: theLastSection ? theLastSection.order + 1 : 0,
+          courseSectionId: router?.sectionId ? +router?.sectionId : 0,
+          order: theLastUnit ? theLastUnit.order + 1 : 0,
         };
-        const data = await addCourseSection(addCourseSectionPayload);
+        const data = await addCourseUnit(addCourseUnitPayload);
         if (data?.id) {
           notificationController.success({ message: t('common.success') });
         } else {
-          notificationController.error({ message: 'Add course section failed' });
+          notificationController.error({ message: 'Add course unit failed' });
         }
-        setOpenModalCourseSection(false);
+        setOpenModalCourseUnit(false);
         setConfirmLoading(false);
         fetch(initialPagination);
-        courseSectionForm.resetFields();
+        courseUnitForm.resetFields();
       })
       .catch((info) => {
         notificationController.error({ message: info });
@@ -135,17 +136,17 @@ const ListCourseSectionPage: React.FC = () => {
       .validateFields()
       .then(async (values) => {
         setConfirmLoading(true);
-        const editCourseSectionPayload: AddCourseSectionRequest = {
+        const editCourseUnitPayload: AddCourseUnitRequest = {
           title: values.title,
           description: values.description,
-          courseId: values.courseId,
+          courseSectionId: values.courseSectionId,
           order: values.order,
         };
-        const data = await updateCourseSection(values.id, editCourseSectionPayload);
+        const data = await updateCourseUnit(values.id, editCourseUnitPayload);
         if (data?.id) {
           notificationController.success({ message: t('common.success') });
         } else {
-          notificationController.error({ message: 'Update course section failed' });
+          notificationController.error({ message: 'Update course unit failed' });
         }
         setOpenModalEdit(false);
         setConfirmLoading(false);
@@ -184,7 +185,7 @@ const ListCourseSectionPage: React.FC = () => {
         return (
           <BaseSpace>
             <BaseButton type="ghost">
-              <Link to={`${record.id}/units`}>{'View units'}</Link>
+              <Link to={`${record.id}`}>{'View'}</Link>
             </BaseButton>
             <BaseButton type="ghost" onClick={() => handleEdit(record)}>
               {'Edit'}
@@ -199,7 +200,7 @@ const ListCourseSectionPage: React.FC = () => {
   ];
 
   const handleAdd = () => {
-    setOpenModalCourseSection(true);
+    setOpenModalCourseUnit(true);
   };
 
   const handleEdit = (record: DataType) => {
@@ -209,7 +210,7 @@ const ListCourseSectionPage: React.FC = () => {
       title: record.title,
       description: record.description,
       order: record.order,
-      courseId: record.course.id,
+      courseSectionId: record.courseSection.id,
     });
   };
 
@@ -262,20 +263,20 @@ const ListCourseSectionPage: React.FC = () => {
         };
       });
       if (over) {
-        const data = await changeOrderCourseSections({ activeId: +active.id, overId: +over.id });
+        const data = await changeOrderCourseUnits({ activeId: +active.id, overId: +over.id });
         if (data?.affected) {
           fetch(initialPagination);
-          notificationController.success({ message: 'Update order course section successfully' });
+          notificationController.success({ message: 'Update order course unit successfully' });
           return;
         }
         fetch(initialPagination);
-        notificationController.error({ message: 'Update order course section successfully' });
+        notificationController.error({ message: 'Update order course unit successfully' });
       }
     }
   };
 
   return (
-    <BaseCard id="validation form" title={'Course sections'} padding="1.25rem">
+    <BaseCard id="validation form" title={'Course units'} padding="1.25rem">
       <BaseButton
         style={{
           position: 'absolute',
@@ -284,22 +285,22 @@ const ListCourseSectionPage: React.FC = () => {
         }}
         type="default"
       >
-        <Link to={`/courses/detail/${router.courseId}`}>Back to course</Link>
+        <Link to={`/courses/detail/${router.courseId}/sections`}>Back to course section</Link>
       </BaseButton>
       <BaseButton onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
-        Add a new course section
+        Add a new course unit
       </BaseButton>
       <Modal
         zIndex={1000}
-        open={openModalCourseSection}
-        title="Create a new course section"
+        open={openModalCourseUnit}
+        title="Create a new course unit"
         okText="Create"
         cancelText="Cancel"
-        onCancel={() => setOpenModalCourseSection(false)}
+        onCancel={() => setOpenModalCourseUnit(false)}
         onOk={handleOk}
         confirmLoading={confirmLoading}
       >
-        <Form form={courseSectionForm} layout="vertical" name="form_in_modal">
+        <Form form={courseUnitForm} layout="vertical" name="form_in_modal">
           <Form.Item
             name="title"
             label="Title"
@@ -328,7 +329,7 @@ const ListCourseSectionPage: React.FC = () => {
       </Modal>
       <Modal
         open={openModalEdit}
-        title="Edit course section"
+        title="Edit course unit"
         okText="Edit"
         cancelText="Cancel"
         onCancel={() => setOpenModalEdit(false)}
@@ -366,7 +367,7 @@ const ListCourseSectionPage: React.FC = () => {
           <Form.Item name="order" label="Order" hidden>
             <BaseInput />
           </Form.Item>
-          <Form.Item name="courseId" label="courseId" hidden>
+          <Form.Item name="courseSectionId" label="courseSectionId" hidden>
             <BaseInput />
           </Form.Item>
         </Form>
@@ -391,4 +392,4 @@ const ListCourseSectionPage: React.FC = () => {
   );
 };
 
-export default ListCourseSectionPage;
+export default ListCourseUnitPage;
