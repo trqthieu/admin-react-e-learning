@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
+import { BACKEND_BASE_URL } from '@app/constants/config/api';
 const { RangePicker } = DatePicker;
 
 const formItemLayout = {
@@ -297,7 +298,7 @@ const AddCoursePage: React.FC = () => {
               >
                 <BaseUpload
                   name="file"
-                  action="https://nest-e-learning.onrender.com/files/upload-image"
+                  action={`${BACKEND_BASE_URL}/files/upload-image`}
                   listType="picture"
                   maxCount={1}
                   multiple={false}

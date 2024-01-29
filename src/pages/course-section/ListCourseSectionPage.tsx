@@ -3,6 +3,7 @@ import {
   AddCourseSectionRequest,
   CourseSectionResponse,
   addCourseSection,
+  changeOrderCourseSections,
   deleteCourseSection,
   getCourseSections,
   updateCourseSection,
@@ -17,7 +18,7 @@ import { notificationController } from '@app/controllers/notificationController'
 import { useMounted } from '@app/hooks/useMounted';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Form, Modal } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
@@ -60,6 +61,7 @@ const ListCourseSectionPage: React.FC = () => {
       getCourseSections({
         page: pagination.current,
         take: pagination.pageSize,
+        courseId: router?.id ? +router?.id : 0,
       }).then((res) => {
         if (isMounted.current) {
           setTableData({
@@ -92,7 +94,7 @@ const ListCourseSectionPage: React.FC = () => {
       onOk() {
         setTableData({ ...tableData, loading: true });
         deleteCourseSection(rowId).then((res) => {
-          if (res.affected) {
+          if (res?.affected) {
             fetch(initialPagination);
             notificationController.success({ message: 'Delete course section successfully' });
           }
@@ -181,6 +183,9 @@ const ListCourseSectionPage: React.FC = () => {
       render: (text, record) => {
         return (
           <BaseSpace>
+            <BaseButton type="ghost">
+              <Link to={`${record.id}/units`}>{'View units'}</Link>
+            </BaseButton>
             <BaseButton type="ghost" onClick={() => handleEdit(record)}>
               {'Edit'}
             </BaseButton>
@@ -221,7 +226,7 @@ const ListCourseSectionPage: React.FC = () => {
       ...props.style,
       transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),
       transition,
-      ...(isDragging ? { position: 'relative', zIndex: 9999 } : {}),
+      ...(isDragging ? { position: 'relative', zIndex: 99 } : {}),
     };
 
     return (
@@ -244,15 +249,28 @@ const ListCourseSectionPage: React.FC = () => {
     );
   };
 
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
+  const onDragEnd = async ({ active, over }: DragEndEvent) => {
     if (active.id !== over?.id) {
-      console.log(active.id);
-      console.log(over?.id);
-      // setDataSource((previous) => {
-      //   const activeIndex = previous.findIndex((i) => i.key === active.id);
-      //   const overIndex = previous.findIndex((i) => i.key === over?.id);
-      //   return arrayMove(previous, activeIndex, overIndex);
-      // });
+      setTableData((previousData) => {
+        const previous = previousData.data;
+        const activeIndex = previous.findIndex((i) => i.key === active.id);
+        const overIndex = previous.findIndex((i) => i.key === over?.id);
+        return {
+          ...previousData,
+          data: arrayMove(previous, activeIndex, overIndex),
+          loading: true,
+        };
+      });
+      if (over) {
+        const data = await changeOrderCourseSections({ activeId: +active.id, overId: +over.id });
+        if (data?.affected) {
+          fetch(initialPagination);
+          notificationController.success({ message: 'Update order course section successfully' });
+          return;
+        }
+        fetch(initialPagination);
+        notificationController.error({ message: 'Update order course section successfully' });
+      }
     }
   };
 
@@ -272,6 +290,7 @@ const ListCourseSectionPage: React.FC = () => {
         Add a new course section
       </BaseButton>
       <Modal
+        zIndex={1000}
         open={openModalCourseSection}
         title="Create a new course section"
         okText="Create"
