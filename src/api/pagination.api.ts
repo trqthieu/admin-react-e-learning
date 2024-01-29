@@ -25,3 +25,7 @@ export interface PaginationResponse<T> {
 export interface DeletedResponse {
   affected: number;
 }
+
+export interface UpdatedResponse {
+  affected: number;
+}

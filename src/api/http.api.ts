@@ -3,10 +3,11 @@ import { AxiosError } from 'axios';
 import { ApiError } from '@app/api/ApiError';
 import { readToken } from '@app/services/localStorage.service';
 import { notificationController } from '@app/controllers/notificationController';
+import { BACKEND_BASE_URL } from '@app/constants/config/api';
 
 export const httpApi = axios.create({
-  // baseURL: process.env.REACT_APP_BASE_URL,
-  baseURL: 'https://nest-e-learning.onrender.com',
+  baseURL: BACKEND_BASE_URL,
+  // baseURL: 'https://nest-e-learning.onrender.com',
 });
 
 httpApi.interceptors.request.use((config) => {

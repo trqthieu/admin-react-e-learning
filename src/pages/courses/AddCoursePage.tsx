@@ -22,6 +22,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import moment from 'moment';
+import { Link } from 'react-router-dom';
+import { BACKEND_BASE_URL } from '@app/constants/config/api';
 const { RangePicker } = DatePicker;
 
 const formItemLayout = {
@@ -259,6 +261,18 @@ const AddCoursePage: React.FC = () => {
       <BaseRow gutter={[30, 30]}>
         <BaseCol xs={24} sm={24} xl={24}>
           <BaseCard id="validation form" title={router.id ? 'Edit Course' : 'Add Course'} padding="1.25rem">
+            {router.id && (
+              <BaseButton
+                style={{
+                  position: 'absolute',
+                  top: 20,
+                  right: 20,
+                }}
+                type="default"
+              >
+                <Link to={'sections'}>Manage course sections</Link>
+              </BaseButton>
+            )}
             <BaseButtonsForm
               {...formItemLayout}
               isFieldsChanged={isFieldsChanged}
@@ -284,7 +298,7 @@ const AddCoursePage: React.FC = () => {
               >
                 <BaseUpload
                   name="file"
-                  action="https://nest-e-learning.onrender.com/files/upload-image"
+                  action={`${BACKEND_BASE_URL}/files/upload-image`}
                   listType="picture"
                   maxCount={1}
                   multiple={false}
@@ -317,12 +331,14 @@ const AddCoursePage: React.FC = () => {
                       },
                     ]}
                   >
-                    <label>
-                      <BaseButtonsForm.Item name="duration" noStyle>
-                        <InputNumber min={0} />
-                      </BaseButtonsForm.Item>
-                    </label>
-                    <span> {'minutes'}</span>
+                    <>
+                      <label>
+                        <BaseButtonsForm.Item name="duration" noStyle>
+                          <InputNumber min={0} />
+                        </BaseButtonsForm.Item>
+                      </label>
+                      <span> {'minutes'}</span>
+                    </>
                   </BaseButtonsForm.Item>
                 </BaseCol>
                 <BaseCol xs={24} sm={9} xl={9}>
@@ -528,12 +544,14 @@ const AddCoursePage: React.FC = () => {
                       },
                     ]}
                   >
-                    <label>
-                      <BaseButtonsForm.Item name="price" noStyle>
-                        <InputNumber min={0} />
-                      </BaseButtonsForm.Item>
-                    </label>
-                    <span> {'$'}</span>
+                    <>
+                      <label>
+                        <BaseButtonsForm.Item name="price" noStyle>
+                          <InputNumber min={0} />
+                        </BaseButtonsForm.Item>
+                      </label>
+                      <span> {'$'}</span>
+                    </>
                   </BaseButtonsForm.Item>
                 </BaseCol>
                 <BaseCol xs={24} sm={8} xl={8}>
@@ -548,12 +566,14 @@ const AddCoursePage: React.FC = () => {
                       },
                     ]}
                   >
-                    <label>
-                      <BaseButtonsForm.Item name="discount" noStyle>
-                        <InputNumber min={0} max={100} />
-                      </BaseButtonsForm.Item>
-                    </label>
-                    <span> {'%'}</span>
+                    <>
+                      <label>
+                        <BaseButtonsForm.Item name="discount" noStyle>
+                          <InputNumber min={0} max={100} />
+                        </BaseButtonsForm.Item>
+                      </label>
+                      <span> {'%'}</span>
+                    </>
                   </BaseButtonsForm.Item>
                 </BaseCol>
                 <BaseCol xs={24} sm={8} xl={8}>
