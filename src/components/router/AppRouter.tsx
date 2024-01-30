@@ -26,6 +26,7 @@ import ListCourseSectionPage from '@app/pages/course-section/ListCourseSectionPa
 import ListCourseUnitPage from '@app/pages/course-unit/ListCourseUnitPage';
 import DetailCourseUnitPage from '@app/pages/course-unit/DetailCourseUnitPage';
 import AddLessonPage from '@app/pages/lessons/AddLessonPage';
+import AddExercisePage from '@app/pages/exercises/AddExercisePage';
 
 const NewsFeedPage = React.lazy(() => import('@app/pages/NewsFeedPage'));
 const DataTablesPage = React.lazy(() => import('@app/pages/DataTablesPage'));
@@ -135,6 +136,7 @@ const ListCourseSection = withLoading(ListCourseSectionPage);
 const ListCourseUnit = withLoading(ListCourseUnitPage);
 const DetailCourseUnit = withLoading(DetailCourseUnitPage);
 const AddLesson = withLoading(AddLessonPage);
+const AddExercise = withLoading(AddExercisePage);
 const AddCourseGroup = withLoading(AddCourseGroupPage);
 const ListCourseGroup = withLoading(ListCourseGroupPage);
 
@@ -172,6 +174,8 @@ export const AppRouter: React.FC = () => {
                     <Route path="" element={<DetailCourseUnit />} />
                     <Route path="lessons/create" element={<AddLesson />} />
                     <Route path="lessons/:lessonId" element={<AddLesson />} />
+                    <Route path="exercises/create" element={<AddExercise />} />
+                    <Route path="exercises/:exerciseId" element={<AddExercise />} />
                   </Route>
 
                   <Route path="" element={<ListCourseUnit />} />

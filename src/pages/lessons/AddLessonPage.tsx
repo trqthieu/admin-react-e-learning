@@ -5,6 +5,7 @@ import {
   addCourseLesson,
   getCourseLesson,
   getCourseLessons,
+  updateCourseLesson,
 } from '@app/api/course-lesson.api';
 import { getCourse } from '@app/api/courses.api';
 import { getUsers } from '@app/api/users.api';
@@ -72,9 +73,7 @@ const AddLessonPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>();
-  const [videoUrl, setVideoUrl] = useState<string>();
-  console.log('videoUrl', videoUrl);
-
+  console.log(router);
   const fetchLesson = useCallback(async (unitId: number) => {
     const data = await getCourseLessons({ courseUnitId: unitId, page: 1, take: 50 });
     setLessonList(data.data.sort((a, b) => a.order - b.order));
@@ -84,7 +83,7 @@ const AddLessonPage: React.FC = () => {
     if (router.unitId) {
       fetchLesson(+router.unitId);
     }
-  }, []);
+  }, [fetchLesson, router.unitId]);
 
   const handleChangeImage: UploadProps['onChange'] = (info) => {
     if (info.file.status === 'uploading') {
@@ -100,36 +99,38 @@ const AddLessonPage: React.FC = () => {
   };
 
   const onFinish = async (values: any) => {
-    console.log(values);
-
-    // setIsLoading(true);
-    // const theLastLesson = lessonList[lessonList.length - 1];
-    // const addLessonPayload: AddCourseLessonRequest = {
-    //   title: values.title,
-    //   description: values.description,
-    //   content: values.content,
-    //   banner: values?.banner?.[0]?.response?.url || imageUrl,
-    //   courseUnitId: router?.unitId ? +router?.unitId : 0,
-    //   video: values?.video?.[0]?.response?.url,
-    //   attachments: values?.attachments?.map((attachment: any) => attachment?.response?.url),
-    //   order: theLastLesson ? theLastLesson.order + 1 : 0,
-    // };
-    // if (router.lessonId) {
-    //   const data = await updateCourse(+router.lessonId, addCoursePayload);
-    //   if (data?.id) {
-    //     notificationController.success({ message: t('common.success') });
-    //     setIsLoading(false);
-    //     setFieldsChanged(false);
-    //   }
-    //   return;
-    // }
-    // const data = await addCourseLesson(addLessonPayload);
-    // if (data?.id) {
-    //   notificationController.success({ message: t('common.success') });
-    //   navigate(`/courses/detail/${router.courseId}/sections/${router.sectionId}/units/${router.unitId}`);
-    // }
-    // setIsLoading(false);
-    // setFieldsChanged(false);
+    console.log('values', values);
+    setIsLoading(true);
+    const theLastLesson = lessonList[lessonList.length - 1];
+    const theLastOrder = theLastLesson ? theLastLesson.order + 1 : 0;
+    const addLessonPayload: AddCourseLessonRequest = {
+      title: values.title,
+      description: values.description,
+      content: values.content,
+      banner: values?.banner?.[0]?.response?.url || imageUrl,
+      courseUnitId: router?.unitId ? +router?.unitId : 0,
+      video: values?.video?.[0]?.response?.url || values?.video?.[0]?.url,
+      attachments: values?.attachments?.map((attachment: any) => attachment?.url || attachment?.response?.url),
+      order: values.order ?? theLastOrder,
+    };
+    if (router.lessonId) {
+      const data = await updateCourseLesson(+router.lessonId, addLessonPayload);
+      if (data?.id) {
+        notificationController.success({ message: t('common.success') });
+        setIsLoading(false);
+        setFieldsChanged(false);
+      }
+      setIsLoading(false);
+      setFieldsChanged(false);
+      return;
+    }
+    const data = await addCourseLesson(addLessonPayload);
+    if (data?.id) {
+      notificationController.success({ message: t('common.success') });
+      navigate(`/courses/detail/${router.courseId}/sections/${router.sectionId}/units/${router.unitId}`);
+    }
+    setIsLoading(false);
+    setFieldsChanged(false);
   };
 
   useEffect(() => {
@@ -137,30 +138,25 @@ const AddLessonPage: React.FC = () => {
     const fetchLesson = async (id: number) => {
       const data = await getCourseLesson(id);
       form.setFieldsValue({
-        // ...data,
         banner: undefined,
         title: data.title,
         description: data.description,
         content: data.content,
+        order: data.order || 0,
         video: [
           {
-            name: 'Video',
-            url: 'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/b59093e2-b25f-4280-8aa3-61ef273d617b-movie-app.mp4?alt=media',
+            name: 'Click to see video',
+            url: data.video,
           },
         ],
         attachments: [
-          {
-            name: 'Attachment 1',
-            url: 'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/85a41ec6-dfcf-4eb9-ae7f-b9672356fb6b-e-learning.pdf?alt=media',
-          },
-          {
-            name: 'Attachment 2',
-            url: 'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/c3a609f2-3b8b-4151-a5e3-533ba588a899-ImprovingPerformanceAndroid.pptx?alt=media',
-          },
+          ...data.attachments.map((attachment, index) => ({
+            name: `Attachment ${index + 1}`,
+            url: attachment,
+          })),
         ],
       });
       setImageUrl(data.banner);
-      setVideoUrl(data.video);
     };
     if (id) {
       fetchLesson(+id);
@@ -168,7 +164,7 @@ const AddLessonPage: React.FC = () => {
       form.resetFields();
       setImageUrl(undefined);
     }
-  }, []);
+  }, [form, router.lessonId]);
 
   return (
     <>
@@ -234,6 +230,14 @@ const AddLessonPage: React.FC = () => {
                 <BaseInput />
               </BaseForm.Item>
               <BaseForm.Item
+                name="order"
+                label={'Order'}
+                // rules={[{ required: true, message: 'Order is required' }]}
+                hidden
+              >
+                <BaseInput />
+              </BaseForm.Item>
+              <BaseForm.Item
                 name="description"
                 label={'Description'}
                 rules={[{ required: true, message: 'Description is required' }]}
@@ -253,6 +257,7 @@ const AddLessonPage: React.FC = () => {
                   action={`${BACKEND_BASE_URL}/files/upload-document`}
                   listType="picture"
                   beforeUpload={beforeUploadVideo}
+                  maxCount={1}
                 >
                   <BaseButton type="default" icon={<UploadOutlined />}>
                     {t('forms.validationFormLabels.clickToUpload')}
