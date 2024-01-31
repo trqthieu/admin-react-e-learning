@@ -307,7 +307,7 @@ const AddCoursePage: React.FC = () => {
                   onChange={handleChange}
                 >
                   {imageUrl ? (
-                    <img src={imageUrl} alt="avatar" style={{ maxWidth: '500px', borderRadius: '20px' }} />
+                    <img src={imageUrl} alt="avatar" style={{ maxWidth: '500px', borderRadius: '10px' }} />
                   ) : (
                     <BaseButton type="default" icon={loading ? <LoadingOutlined /> : <UploadOutlined />}>
                       {t('forms.validationFormLabels.clickToUpload')}

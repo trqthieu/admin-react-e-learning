@@ -11,6 +11,7 @@ import {
   BlockOutlined,
   BookOutlined,
   GroupOutlined,
+  ContactsOutlined,
 } from '@ant-design/icons';
 import { ReactComponent as NftIcon } from '@app/assets/icons/nft-icon.svg';
 
@@ -98,6 +99,23 @@ export const sidebarNavigation: SidebarNavigationItem[] = [
     ],
   },
   {
+    title: 'User',
+    key: 'user',
+    icon: <UserOutlined />,
+    children: [
+      {
+        title: 'User list',
+        key: 'user-list',
+        url: '/users/list',
+      },
+      {
+        title: 'Add user',
+        key: 'add-user',
+        url: '/users/add-user',
+      },
+    ],
+  },
+  {
     title: 'Course Group',
     key: 'courseGroup',
     icon: <GroupOutlined />,
@@ -132,19 +150,36 @@ export const sidebarNavigation: SidebarNavigationItem[] = [
     ],
   },
   {
-    title: 'User',
-    key: 'user',
-    icon: <UserOutlined />,
+    title: 'Exam',
+    key: 'exam',
+    icon: <FormOutlined />,
     children: [
       {
-        title: 'User list',
-        key: 'user-list',
-        url: '/users/list',
+        title: 'Exam list',
+        key: 'exam-list',
+        url: '/exams/list',
       },
       {
-        title: 'Add user',
-        key: 'add-user',
-        url: '/users/add-user',
+        title: 'Add exam',
+        key: 'add-exam',
+        url: '/exams/add-exam',
+      },
+    ],
+  },
+  {
+    title: 'Article',
+    key: 'article',
+    icon: <ContactsOutlined />,
+    children: [
+      {
+        title: 'Article list',
+        key: 'article-list',
+        url: '/articles/list',
+      },
+      {
+        title: 'Add Article',
+        key: 'add-Article',
+        url: '/articles/add-article',
       },
     ],
   },

@@ -59,11 +59,13 @@ export const addQuestion = (addQuestionPayload: AddQuestionRequest): Promise<Que
     return res?.data;
   });
 interface GetQuestionRequest extends PaginationRequest {
-  exerciseId: number;
+  exerciseId?: number;
+  examId?: number;
 }
 interface OrderQuestionRequest {
   activeId: number;
   overId: number;
+  type: string;
 }
 export const getQuestions = (getQuestionRequest: GetQuestionRequest): Promise<PaginationResponse<QuestionResponse>> =>
   httpApi

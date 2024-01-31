@@ -1,50 +1,27 @@
-import { InboxOutlined, LoadingOutlined, MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import {
-  AddCourseExerciseRequest,
-  CourseExerciseResponse,
-  addCourseExercise,
-  getCourseExercise,
-  getCourseExercises,
-  updateCourseExercise,
-} from '@app/api/course-exercise.api';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { CourseExerciseResponse } from '@app/api/course-exercise.api';
 import { BaseButton } from '@app/components/common/BaseButton/BaseButton';
 import { BaseCard } from '@app/components/common/BaseCard/BaseCard';
 import { BaseCol } from '@app/components/common/BaseCol/BaseCol';
 import { BaseRow } from '@app/components/common/BaseRow/BaseRow';
-import { BaseUpload } from '@app/components/common/BaseUpload/BaseUpload';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { BaseButtonsForm } from '@app/components/common/forms/BaseButtonsForm/BaseButtonsForm';
 import { BaseForm } from '@app/components/common/forms/BaseForm/BaseForm';
 import { BaseInput } from '@app/components/common/inputs/BaseInput/BaseInput';
-import { BACKEND_BASE_URL } from '@app/constants/config/api';
-import { beforeUploadDocument, beforeUploadImage, beforeUploadVideo } from '@app/constants/config/upload';
 import { notificationController } from '@app/controllers/notificationController';
-import type { UploadProps } from 'antd';
 import { Input } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const formItemLayout = {
   labelCol: { span: 24 },
   wrapperCol: { span: 24 },
 };
 
-const normFile = (e = { fileList: [] }) => {
-  if (Array.isArray(e)) {
-    return e;
-  }
-  return e && e.fileList;
-};
-
-const getBase64 = (img: File, callback: (url: string) => void) => {
-  const reader = new FileReader();
-  reader.addEventListener('load', () => callback(reader.result as string));
-  reader.readAsDataURL(img);
-};
-
 import { ExclamationCircleFilled, MenuOutlined } from '@ant-design/icons';
+import { AddExamRequest, addExam, getExam, updateExam } from '@app/api/exam.api';
 import {
   AddQuestionRequest,
   AddQuestionSelectRequest,
@@ -55,10 +32,12 @@ import {
   getQuestions,
   updateQuestion,
 } from '@app/api/question.api';
+import { getUsers } from '@app/api/users.api';
 import { BaseCheckbox } from '@app/components/common/BaseCheckbox/BaseCheckbox';
 import { BaseRadio } from '@app/components/common/BaseRadio/BaseRadio';
 import { BaseSpace } from '@app/components/common/BaseSpace/BaseSpace';
 import { BaseTable } from '@app/components/common/BaseTable/BaseTable';
+import { BaseSelect } from '@app/components/common/selects/BaseSelect/BaseSelect';
 import { useMounted } from '@app/hooks/useMounted';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
@@ -79,72 +58,35 @@ interface DataType extends QuestionResponse {
 
 const AddExercisePage: React.FC = () => {
   const [isFieldsChanged, setFieldsChanged] = useState(false);
-  const [exerciseList, setExerciseList] = useState<Array<CourseExerciseResponse>>([]);
-  console.log('exerciseList', exerciseList);
-
+  const [teacherOption, setTeacherOption] = useState<Array<{ value: number; label: string }>>([]);
   const [form] = useForm();
   const initialValues = useMemo(() => {
     return {
       title: '',
-      // banner: 'http://res.cloudinary.com/dqzfbcoia/image/upload/v1706546211/dvt3ccbdfqhcktvfe8s9.jpg',
-      description: '',
       content: '',
-      // video:
-      //   'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/eb3aca17-3b69-4bea-ac34-26bd7523c4ca-movie-app.mp4?alt=media',
-      // attachments: [
-      //   'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/85a41ec6-dfcf-4eb9-ae7f-b9672356fb6b-e-learning.pdf?alt=media',
-      //   'https://firebasestorage.googleapis.com/v0/b/e-learning-25868.appspot.com/o/c3a609f2-3b8b-4151-a5e3-533ba588a899-ImprovingPerformanceAndroid.pptx?alt=media',
-      // ],
+      description: '',
+      category: 'OTHERS',
     };
   }, []);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const router = useParams();
   const [isLoading, setIsLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string>();
   console.log(router);
-  const fetchExercise = useCallback(async (unitId: number) => {
-    const data = await getCourseExercises({ courseUnitId: unitId, page: 1, take: 50 });
-    setExerciseList(data.data.sort((a, b) => a.order - b.order));
-  }, []);
-  const patio = router?.exerciseId ? 12 : 24;
-  useEffect(() => {
-    if (router.unitId) {
-      fetchExercise(+router.unitId);
-    }
-  }, [fetchExercise, router.unitId]);
-
-  const handleChangeImage: UploadProps['onChange'] = (info) => {
-    if (info.file.status === 'uploading') {
-      setLoading(true);
-      return;
-    }
-    if (info.file.status === 'done') {
-      getBase64(info.file.originFileObj as File, (url) => {
-        setLoading(false);
-        setImageUrl(url);
-      });
-    }
-  };
+  const patio = router.examId ? 12 : 24;
 
   const onFinish = async (values: any) => {
     console.log('values', values);
     setIsLoading(true);
-    const theLastExercise = exerciseList[exerciseList.length - 1];
-    const theLastOrder = theLastExercise ? theLastExercise.order + 1 : 0;
-    const addExercisePayload: AddCourseExerciseRequest = {
+    const addExamPayload: AddExamRequest = {
       title: values.title,
       description: values.description,
       content: values.content,
-      banner: values?.banner?.[0]?.response?.url || imageUrl,
-      courseUnitId: router?.unitId ? +router?.unitId : 0,
-      video: values?.video?.[0]?.response?.url || values?.video?.[0]?.url,
-      attachments: values?.attachments?.map((attachment: any) => attachment?.url || attachment?.response?.url),
-      order: values.order ?? theLastOrder,
+      category: values.category,
+      authorId: values.authorId,
     };
-    if (router.exerciseId) {
-      const data = await updateCourseExercise(+router.exerciseId, addExercisePayload);
+    if (router.examId) {
+      const data = await updateExam(+router.examId, addExamPayload);
       if (data?.id) {
         notificationController.success({ message: t('common.success') });
         setIsLoading(false);
@@ -154,47 +96,33 @@ const AddExercisePage: React.FC = () => {
       setFieldsChanged(false);
       return;
     }
-    const data = await addCourseExercise(addExercisePayload);
+    const data = await addExam(addExamPayload);
     if (data?.id) {
       notificationController.success({ message: t('common.success') });
-      navigate(`/courses/detail/${router.courseId}/sections/${router.sectionId}/units/${router.unitId}`);
+      navigate('exams/list');
     }
     setIsLoading(false);
     setFieldsChanged(false);
   };
 
   useEffect(() => {
-    const id = router.exerciseId;
-    const fetchExercise = async (id: number) => {
-      const data = await getCourseExercise(id);
+    const id = router.examId;
+    const fetchExam = async (id: number) => {
+      const data = await getExam(id);
       form.setFieldsValue({
-        banner: undefined,
         title: data.title,
         description: data.description,
         content: data.content,
-        order: data.order || 0,
-        video: [
-          {
-            name: 'Click to see video',
-            url: data.video,
-          },
-        ],
-        attachments: [
-          ...data.attachments.map((attachment, index) => ({
-            name: `Attachment ${index + 1}`,
-            url: attachment,
-          })),
-        ],
+        category: data.category,
+        authorId: data.author.id,
       });
-      setImageUrl(data.banner);
     };
     if (id) {
-      fetchExercise(+id);
+      fetchExam(+id);
     } else {
       form.resetFields();
-      setImageUrl(undefined);
     }
-  }, [form, router.exerciseId]);
+  }, [form, router.examId]);
 
   const [questionForm] = BaseForm.useForm();
   const [editForm] = BaseForm.useForm();
@@ -213,13 +141,13 @@ const AddExercisePage: React.FC = () => {
 
   const { isMounted } = useMounted();
 
-  const fetch = useCallback(
+  const fetchQuestion = useCallback(
     (pagination: Pagination) => {
       setTableData((tableData) => ({ ...tableData, loading: true }));
       getQuestions({
         page: pagination.current,
         take: pagination.pageSize,
-        exerciseId: router?.exerciseId ? +router?.exerciseId : 0,
+        examId: router?.examId ? +router?.examId : 0,
       }).then((res) => {
         if (isMounted.current) {
           setTableData({
@@ -234,12 +162,22 @@ const AddExercisePage: React.FC = () => {
         }
       });
     },
-    [isMounted],
+    [isMounted, router?.examId],
   );
 
   useEffect(() => {
-    fetch(initialPagination);
-  }, [fetch]);
+    if (router.examId) {
+      fetchQuestion(initialPagination);
+    }
+    const fetchUser = async () => {
+      const response = await getUsers({ page: 1, take: 50 });
+      const teacherData = response.data.filter((user) => user.role === 'TEACHER');
+      setTeacherOption(
+        teacherData.map((teacher) => ({ value: teacher.id, label: `${teacher.firstName} ${teacher.lastName}` })),
+      );
+    };
+    fetchUser();
+  }, [fetchQuestion, router.examId]);
 
   const handleDeleteRow = (rowId: number) => {
     confirm({
@@ -253,7 +191,7 @@ const AddExercisePage: React.FC = () => {
         setTableData({ ...tableData, loading: true });
         deleteQuestion(rowId).then((res) => {
           if (res?.affected) {
-            fetch(initialPagination);
+            fetchQuestion(initialPagination);
             notificationController.success({ message: 'Delete question successfully' });
           }
         });
@@ -274,8 +212,8 @@ const AddExercisePage: React.FC = () => {
           description: values.description,
           order: tableData.data.length,
           answerType: values.answerType,
-          questionType: 'EXERCISE',
-          exerciseId: router.exerciseId ? +router.exerciseId : 0,
+          questionType: 'EXAM',
+          examId: router.examId ? +router.examId : 0,
           selections: values?.selections?.map((selection: AddQuestionSelectRequest, index: number) => ({
             key: selection.key,
             isCorrect: selection.isCorrect === true,
@@ -291,7 +229,7 @@ const AddExercisePage: React.FC = () => {
         }
         setOpenModalQuestion(false);
         setConfirmLoading(false);
-        fetch(initialPagination);
+        fetchQuestion(initialPagination);
         questionForm.resetFields();
       })
       .catch((info) => {
@@ -309,8 +247,8 @@ const AddExercisePage: React.FC = () => {
           description: values.description,
           order: values.order,
           answerType: values.answerType,
-          questionType: 'EXERCISE',
-          exerciseId: router.exerciseId ? +router.exerciseId : 0,
+          questionType: 'EXAM',
+          examId: router.examId ? +router.examId : 0,
           selections: values?.selections?.map((selection: AddQuestionSelectRequest, index: number) => ({
             id: selection.id,
             key: selection.key,
@@ -328,7 +266,7 @@ const AddExercisePage: React.FC = () => {
         }
         setOpenModalEdit(false);
         setConfirmLoading(false);
-        fetch(initialPagination);
+        fetchQuestion(initialPagination);
         editForm.resetFields();
       })
       .catch((info) => {
@@ -440,13 +378,13 @@ const AddExercisePage: React.FC = () => {
         };
       });
       if (over) {
-        const data = await changeOrderQuestions({ activeId: +active.id, overId: +over.id, type: 'EXERCISE' });
+        const data = await changeOrderQuestions({ activeId: +active.id, overId: +over.id, type: 'EXAM' });
         if (data?.affected) {
-          fetch(initialPagination);
+          fetchQuestion(initialPagination);
           notificationController.success({ message: 'Update order question successfully' });
           return;
         }
-        fetch(initialPagination);
+        fetchQuestion(initialPagination);
         notificationController.error({ message: 'Update order question successfully' });
       }
     }
@@ -454,22 +392,10 @@ const AddExercisePage: React.FC = () => {
 
   return (
     <>
-      <PageTitle>{router.exerciseId ? 'Edit Exercise Page' : 'Add Exercise Page'}</PageTitle>
+      <PageTitle>{router.examId ? 'Edit Exam Page' : 'Add Exam Page'}</PageTitle>
       <BaseRow gutter={[30, 30]}>
         <BaseCol xs={patio} sm={patio} xl={patio}>
-          <BaseCard id="validation form" title={router.exerciseId ? 'Edit Exercise' : 'Add Exercise'} padding="1.25rem">
-            <BaseButton
-              style={{
-                position: 'absolute',
-                top: 20,
-                right: 20,
-              }}
-              type="default"
-            >
-              <Link to={`/courses/detail/${router.courseId}/sections/${router.sectionId}/units/${router.unitId}`}>
-                Back to course exercise
-              </Link>
-            </BaseButton>
+          <BaseCard id="validation form" title={router.examId ? 'Edit Exam' : 'Add Exam'} padding="1.25rem">
             <BaseButtonsForm
               {...formItemLayout}
               isFieldsChanged={isFieldsChanged}
@@ -486,32 +412,6 @@ const AddExercisePage: React.FC = () => {
               }
               onFinish={onFinish}
             >
-              <BaseButtonsForm.Item
-                name="banner"
-                label={'Banner'}
-                valuePropName="fileList"
-                getValueFromEvent={normFile}
-                rules={[{ required: imageUrl ? false : true, message: 'Course banner is required' }]}
-              >
-                <BaseUpload
-                  name="file"
-                  action={`${BACKEND_BASE_URL}/files/upload-image`}
-                  listType="picture"
-                  maxCount={1}
-                  multiple={false}
-                  showUploadList={false}
-                  beforeUpload={beforeUploadImage}
-                  onChange={handleChangeImage}
-                >
-                  {imageUrl ? (
-                    <img src={imageUrl} alt="avatar" style={{ maxWidth: '500px', borderRadius: '10px' }} />
-                  ) : (
-                    <BaseButton type="default" icon={loading ? <LoadingOutlined /> : <UploadOutlined />}>
-                      {t('forms.validationFormLabels.clickToUpload')}
-                    </BaseButton>
-                  )}
-                </BaseUpload>
-              </BaseButtonsForm.Item>
               <BaseForm.Item name="title" label={'Title'} rules={[{ required: true, message: 'Title is required' }]}>
                 <BaseInput />
               </BaseForm.Item>
@@ -528,37 +428,39 @@ const AddExercisePage: React.FC = () => {
               <BaseForm.Item name="description" label={'Description'}>
                 <Input.TextArea autoSize={{ minRows: 2, maxRows: 5 }} />
               </BaseForm.Item>
-              <BaseButtonsForm.Item name="video" label={'Video'} valuePropName="fileList" getValueFromEvent={normFile}>
-                <BaseUpload
-                  name="file"
-                  action={`${BACKEND_BASE_URL}/files/upload-document`}
-                  listType="picture"
-                  beforeUpload={beforeUploadVideo}
-                  maxCount={1}
-                >
-                  <BaseButton type="default" icon={<UploadOutlined />}>
-                    {t('forms.validationFormLabels.clickToUpload')}
-                  </BaseButton>
-                </BaseUpload>
+              <BaseButtonsForm.Item
+                name="category"
+                label={'Category'}
+                rules={[{ required: true, message: 'Category is require' }]}
+              >
+                <BaseRadio.Group>
+                  <BaseRadio value="IELTS">IELTS</BaseRadio>
+                  <BaseRadio value="TOEIC">TOEIC</BaseRadio>
+                  <BaseRadio value="TOEFL">TOEFL</BaseRadio>
+                  <BaseRadio value="ENGLISH_BASIC">English Basic</BaseRadio>
+                  <BaseRadio value="OTHERS">Others</BaseRadio>
+                </BaseRadio.Group>
               </BaseButtonsForm.Item>
-              <BaseButtonsForm.Item label={'Attachments'}>
-                <BaseButtonsForm.Item name="attachments" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
-                  <BaseUpload.Dragger
-                    name="file"
-                    action={`${BACKEND_BASE_URL}/files/upload-document`}
-                    beforeUpload={beforeUploadDocument}
-                  >
-                    <p>
-                      <InboxOutlined />
-                    </p>
-                    <p>{t('forms.validationFormLabels.clickToDrag')}</p>
-                  </BaseUpload.Dragger>
-                </BaseButtonsForm.Item>
+              <BaseButtonsForm.Item
+                name="authorId"
+                label={'Teacher'}
+                hasFeedback
+                rules={[{ required: true, message: 'Teacher is require' }]}
+              >
+                <BaseSelect
+                  showSearch
+                  placeholder="Select teacher"
+                  filterOption={(input, option) => (option?.label?.toLowerCase() ?? '').includes(input?.toLowerCase())}
+                  filterSort={(optionA, optionB) =>
+                    (optionA?.label ?? '').toLowerCase().localeCompare((optionB?.label ?? '').toLowerCase())
+                  }
+                  options={teacherOption}
+                />
               </BaseButtonsForm.Item>
             </BaseButtonsForm>
           </BaseCard>
         </BaseCol>
-        {router.exerciseId && (
+        {router.examId && (
           <BaseCol xs={12} sm={12} xl={12}>
             <BaseCard id="validation form" title={'Manage questions'} padding="1.25rem">
               <BaseButton onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>

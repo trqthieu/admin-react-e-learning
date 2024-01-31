@@ -27,6 +27,10 @@ import ListCourseUnitPage from '@app/pages/course-unit/ListCourseUnitPage';
 import DetailCourseUnitPage from '@app/pages/course-unit/DetailCourseUnitPage';
 import AddLessonPage from '@app/pages/lessons/AddLessonPage';
 import AddExercisePage from '@app/pages/exercises/AddExercisePage';
+import AddExamPage from '@app/pages/exam/AddExamPage';
+import ListExamPage from '@app/pages/exam/ListExamPage';
+import AddArticlePage from '@app/pages/articles/AddArticlePage';
+import ListArticlePage from '@app/pages/articles/ListArticlePage';
 
 const NewsFeedPage = React.lazy(() => import('@app/pages/NewsFeedPage'));
 const DataTablesPage = React.lazy(() => import('@app/pages/DataTablesPage'));
@@ -130,6 +134,10 @@ const AuthLayoutFallback = withLoading(AuthLayout);
 const LogoutFallback = withLoading(Logout);
 const AddUser = withLoading(AddUserPage);
 const UserList = withLoading(UserListPage);
+const AddExam = withLoading(AddExamPage);
+const ListExam = withLoading(ListExamPage);
+const AddArticle = withLoading(AddArticlePage);
+const ListArticle = withLoading(ListArticlePage);
 const AddCourse = withLoading(AddCoursePage);
 const ListCourse = withLoading(ListCoursePage);
 const ListCourseSection = withLoading(ListCourseSectionPage);
@@ -189,6 +197,16 @@ export const AppRouter: React.FC = () => {
             <Route path="add-courseGroup" element={<AddCourseGroup />} />
             <Route path="list" element={<ListCourseGroup />} />
             <Route path="detail/:id" element={<AddCourseGroup />} />
+          </Route>
+          <Route path="Exams">
+            <Route path="add-exam" element={<AddExam />} />
+            <Route path="list" element={<ListExam />} />
+            <Route path="detail/:examId" element={<AddExam />} />
+          </Route>
+          <Route path="Articles">
+            <Route path="add-article" element={<AddArticle />} />
+            <Route path="list" element={<ListArticle />} />
+            <Route path="detail/:articleId" element={<AddArticle />} />
           </Route>
           <Route path="data-tables" element={<DataTables />} />
           <Route path="charts" element={<Charts />} />

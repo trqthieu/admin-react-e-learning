@@ -1,12 +1,11 @@
-import { NotificationType } from '@app/components/common/BaseNotification/BaseNotification';
 import { Priority } from '@app//constants/enums/priorities';
-import visa from '@app/assets/images/card-issuers/visa.png';
-import mastercard from '@app/assets/images/card-issuers/mastercard.png';
 import maestro from '@app/assets/images/card-issuers/maestro.png';
-import { CurrencyTypeEnum, Severity } from '@app/interfaces/interfaces';
+import mastercard from '@app/assets/images/card-issuers/mastercard.png';
+import visa from '@app/assets/images/card-issuers/visa.png';
 import { BaseBadgeProps } from '@app/components/common/BaseBadge/BaseBadge';
+import { NotificationType } from '@app/components/common/BaseNotification/BaseNotification';
 import { currencies } from '@app/constants/config/currencies';
-import { ERole } from '@app/constants/enums/role.enum';
+import { CurrencyTypeEnum, Severity } from '@app/interfaces/interfaces';
 
 export const camelize = (string: string): string => {
   return string
@@ -66,6 +65,24 @@ export const defineColorByPriority = (priority: Priority): string => {
   }
 };
 
+export const defineColorRandom = (): string => {
+  const listColor = [
+    '--primary-color',
+    '--primary1-color',
+    '--primary-gradient-color',
+    '--info-color',
+    '--secondary-color',
+    '--error-color',
+    '--warning-color',
+    '--success-color',
+    '--background-color',
+    '--secondary-background-color',
+    '--secondary-background-selected-color',
+  ];
+  const color = listColor[Math.floor(Math.random() * (listColor.length - 1))];
+  return `var(--primary-color)`;
+};
+
 export const defineColorByRole = (role: string): string => {
   switch (role) {
     case 'TEACHER':
@@ -76,6 +93,21 @@ export const defineColorByRole = (role: string): string => {
       return 'var(--warning-color)';
     default:
       return 'var(--success-color)';
+  }
+};
+
+export const defineColorByCategory = (role: string): string => {
+  switch (role) {
+    case 'IELTS':
+      return 'var(--primary-color)';
+    case 'TOEIC':
+      return 'var(--success-color)';
+    case 'TOEFL':
+      return 'var(--warning-color)';
+    case 'ENGLISH_BASIC':
+      return 'var(--error-color)';
+    default:
+      return 'var(--secondary-color)';
   }
 };
 
