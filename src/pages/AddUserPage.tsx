@@ -5,6 +5,7 @@ import { BaseCol } from '@app/components/common/BaseCol/BaseCol';
 import { BaseRadio } from '@app/components/common/BaseRadio/BaseRadio';
 import { BaseRow } from '@app/components/common/BaseRow/BaseRow';
 import { BaseSwitch } from '@app/components/common/BaseSwitch/BaseSwitch';
+import { BaseUpload } from '@app/components/common/BaseUpload/BaseUpload';
 import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { BaseButtonsForm } from '@app/components/common/forms/BaseButtonsForm/BaseButtonsForm';
 import { BaseForm } from '@app/components/common/forms/BaseForm/BaseForm';
@@ -13,11 +14,15 @@ import { InputNumber } from '@app/components/common/inputs/InputNumber/InputNumb
 import { InputPassword } from '@app/components/common/inputs/InputPassword/InputPassword.styles';
 import { FirstNameItem } from '@app/components/profile/profileCard/profileFormNav/nav/PersonalInfo/FirstNameItem/FirstNameItem';
 import { LastNameItem } from '@app/components/profile/profileCard/profileFormNav/nav/PersonalInfo/LastNameItem/LastNameItem';
+import { BACKEND_BASE_URL } from '@app/constants/config/api';
 import { notificationController } from '@app/controllers/notificationController';
+import { message } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
+import type { UploadProps } from 'antd';
+import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 
 const formItemLayout = {
   labelCol: { span: 24 },
@@ -33,12 +38,19 @@ const normFile = (e = { fileList: [] }) => {
   return e && e.fileList;
 };
 
+const getBase64 = (img: File, callback: (url: string) => void) => {
+  const reader = new FileReader();
+  reader.addEventListener('load', () => callback(reader.result as string));
+  reader.readAsDataURL(img);
+};
+
 const AddUserPage: React.FC = () => {
   const [isFieldsChanged, setFieldsChanged] = useState(false);
   const [form] = useForm();
   const initialValues: AddUserRequest = useMemo(() => {
     return {
       email: '',
+      avatar: undefined,
       firstName: '',
       lastName: '',
       password: '',
@@ -49,14 +61,42 @@ const AddUserPage: React.FC = () => {
     };
   }, []);
   const [isLoading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const router = useParams();
+  const [imageUrl, setImageUrl] = useState<string>();
 
-  const onFinish = async (values: AddUserRequest) => {
+  const beforeUpload = (file: File) => {
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    if (!isJpgOrPng) {
+      message.error('You can only upload JPG/PNG file!');
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error('Image must smaller than 2MB!');
+    }
+    return isJpgOrPng && isLt2M;
+  };
+
+  const handleChange: UploadProps['onChange'] = (info) => {
+    if (info.file.status === 'uploading') {
+      setImageLoading(true);
+      return;
+    }
+    if (info.file.status === 'done') {
+      getBase64(info.file.originFileObj as File, (url) => {
+        setImageLoading(false);
+        setImageUrl(url);
+      });
+    }
+  };
+
+  const onFinish = async (values: any) => {
     setLoading(true);
     const addUserPayload: AddUserRequest = {
       email: values.email,
+      avatar: values?.avatar?.[0]?.response?.url || imageUrl,
       firstName: values.firstName,
       lastName: values.lastName,
       phoneNumber: values.phoneNumber,
@@ -91,8 +131,10 @@ const AddUserPage: React.FC = () => {
       const data = await getUser(id);
       form.setFieldsValue({
         ...data,
+        avatar: undefined,
         password: '',
       });
+      setImageUrl(data.avatar);
     };
     if (id) {
       fetchUser(+id);
@@ -103,7 +145,7 @@ const AddUserPage: React.FC = () => {
   return (
     <>
       <PageTitle>{router.id ? 'Edit User Page' : 'Add User Page'}</PageTitle>
-      <BaseRow gutter={[30, 30]}>
+      <BaseRow gutter={[30, 30]} justify={'center'}>
         <BaseCol xs={24} sm={24} xl={18}>
           <BaseCard id="validation form" title={router.id ? 'Edit User' : 'Add User'} padding="1.25rem">
             <BaseButtonsForm
@@ -122,6 +164,32 @@ const AddUserPage: React.FC = () => {
               }
               onFinish={onFinish}
             >
+              <BaseButtonsForm.Item
+                name="avatar"
+                label={'Avatar'}
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+                rules={[{ required: imageUrl ? false : true, message: 'Course avatar is required' }]}
+              >
+                <BaseUpload
+                  name="file"
+                  action={`${BACKEND_BASE_URL}/files/upload-image`}
+                  listType="picture"
+                  maxCount={1}
+                  multiple={false}
+                  showUploadList={false}
+                  beforeUpload={beforeUpload}
+                  onChange={handleChange}
+                >
+                  {imageUrl ? (
+                    <img src={imageUrl} alt="avatar" style={{ maxWidth: '500px', borderRadius: '10px' }} />
+                  ) : (
+                    <BaseButton type="default" icon={imageLoading ? <LoadingOutlined /> : <UploadOutlined />}>
+                      {t('forms.validationFormLabels.clickToUpload')}
+                    </BaseButton>
+                  )}
+                </BaseUpload>
+              </BaseButtonsForm.Item>
               <BaseForm.Item
                 name="email"
                 label={'Email'}

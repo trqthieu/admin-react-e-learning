@@ -2,6 +2,7 @@ import { httpApi } from '@app/api/http.api';
 import { DeletedResponse, PaginationRequest, PaginationResponse } from './pagination.api';
 export interface AddUserRequest {
   email: string;
+  avatar?: string;
   password: string;
   firstName: string;
   lastName: string;
