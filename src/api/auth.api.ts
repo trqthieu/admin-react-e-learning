@@ -39,14 +39,7 @@ export interface LoginResponse {
 export const login = (loginPayload: LoginRequest): Promise<LoginResponse> =>
   httpApi.post<LoginResponse>('auth/login', { ...loginPayload }).then(({ data }) => data);
 
-export const getMe = (accessToken: string): Promise<UserResponse> =>
-  httpApi
-    .get<UserResponse>('auth/getMe', {
-      headers: {
-        Authorization: 'Bearer ' + accessToken,
-      },
-    })
-    .then(({ data }) => data);
+export const getMe = (): Promise<UserResponse> => httpApi.get<UserResponse>('auth/getMe').then(({ data }) => data);
 
 export const signUp = (signUpData: SignUpRequest): Promise<undefined> =>
   httpApi.post<undefined>('signUp', { ...signUpData }).then(({ data }) => data);

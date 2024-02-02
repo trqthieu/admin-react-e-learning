@@ -14,16 +14,16 @@ import { BaseForm } from '@app/components/common/forms/BaseForm/BaseForm';
 import { BaseInput } from '@app/components/common/inputs/BaseInput/BaseInput';
 import { InputNumber } from '@app/components/common/inputs/InputNumber/InputNumber';
 import { BaseSelect } from '@app/components/common/selects/BaseSelect/BaseSelect';
+import { BACKEND_BASE_URL } from '@app/constants/config/api';
+import { beforeUploadImage } from '@app/constants/config/upload';
 import { notificationController } from '@app/controllers/notificationController';
 import type { UploadProps } from 'antd';
-import { Button, DatePicker, Divider, Form, Input, Modal, Space, message } from 'antd';
+import { Button, DatePicker, Divider, Form, Input, Modal, Space } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
+import moment from 'moment';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
-import moment from 'moment';
-import { Link } from 'react-router-dom';
-import { BACKEND_BASE_URL } from '@app/constants/config/api';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 const { RangePicker } = DatePicker;
 
 const formItemLayout = {
@@ -42,18 +42,6 @@ const getBase64 = (img: File, callback: (url: string) => void) => {
   const reader = new FileReader();
   reader.addEventListener('load', () => callback(reader.result as string));
   reader.readAsDataURL(img);
-};
-
-const beforeUpload = (file: File) => {
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-  if (!isJpgOrPng) {
-    message.error('You can only upload JPG/PNG file!');
-  }
-  const isLt2M = file.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    message.error('Image must smaller than 2MB!');
-  }
-  return isJpgOrPng && isLt2M;
 };
 
 const AddCoursePage: React.FC = () => {
@@ -303,7 +291,7 @@ const AddCoursePage: React.FC = () => {
                   maxCount={1}
                   multiple={false}
                   showUploadList={false}
-                  beforeUpload={beforeUpload}
+                  beforeUpload={beforeUploadImage}
                   onChange={handleChange}
                 >
                   {imageUrl ? (

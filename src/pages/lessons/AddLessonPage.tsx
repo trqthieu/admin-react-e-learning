@@ -7,8 +7,6 @@ import {
   getCourseLessons,
   updateCourseLesson,
 } from '@app/api/course-lesson.api';
-import { getCourse } from '@app/api/courses.api';
-import { getUsers } from '@app/api/users.api';
 import { BaseButton } from '@app/components/common/BaseButton/BaseButton';
 import { BaseCard } from '@app/components/common/BaseCard/BaseCard';
 import { BaseCol } from '@app/components/common/BaseCol/BaseCol';
@@ -24,7 +22,6 @@ import { notificationController } from '@app/controllers/notificationController'
 import type { UploadProps } from 'antd';
 import { Input } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
-import moment from 'moment';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';

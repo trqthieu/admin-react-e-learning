@@ -9,7 +9,7 @@ import { BaseButtonsForm } from '@app/components/common/forms/BaseButtonsForm/Ba
 import { BaseForm } from '@app/components/common/forms/BaseForm/BaseForm';
 import { BaseInput } from '@app/components/common/inputs/BaseInput/BaseInput';
 import { notificationController } from '@app/controllers/notificationController';
-import { Input } from 'antd';
+import { Input, Typography } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -99,7 +99,7 @@ const AddExercisePage: React.FC = () => {
     const data = await addExam(addExamPayload);
     if (data?.id) {
       notificationController.success({ message: t('common.success') });
-      navigate('exams/list');
+      navigate('/exams/list');
     }
     setIsLoading(false);
     setFieldsChanged(false);
@@ -292,6 +292,11 @@ const AddExercisePage: React.FC = () => {
     {
       title: 'Content',
       dataIndex: 'content',
+      render: (text, record) => (
+        <Typography.Text ellipsis={true} style={{ width: 200 }}>
+          {text}
+        </Typography.Text>
+      ),
     },
     {
       title: t('tables.actions'),

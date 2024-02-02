@@ -20,7 +20,7 @@ import { BACKEND_BASE_URL } from '@app/constants/config/api';
 import { beforeUploadDocument, beforeUploadImage, beforeUploadVideo } from '@app/constants/config/upload';
 import { notificationController } from '@app/controllers/notificationController';
 import type { UploadProps } from 'antd';
-import { Input } from 'antd';
+import { Input, Typography } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -238,7 +238,9 @@ const AddExercisePage: React.FC = () => {
   );
 
   useEffect(() => {
-    fetch(initialPagination);
+    if (router.exerciseId) {
+      fetch(initialPagination);
+    }
   }, [fetch]);
 
   const handleDeleteRow = (rowId: number) => {
@@ -354,6 +356,11 @@ const AddExercisePage: React.FC = () => {
     {
       title: 'Content',
       dataIndex: 'content',
+      render: (text, record) => (
+        <Typography.Text ellipsis={true} style={{ width: 200 }}>
+          {text}
+        </Typography.Text>
+      ),
     },
     {
       title: t('tables.actions'),

@@ -11,13 +11,13 @@ import { BaseAvatar } from '@app/components/common/BaseAvatar/BaseAvatar';
 export const ProfileDropdown: React.FC = () => {
   const { isTablet } = useResponsive();
 
-  const user = useAppSelector((state) => state.user.user);
+  const user = useAppSelector((state) => state.auth.user);
 
   return user ? (
     <BasePopover content={<ProfileOverlay />} trigger="click">
       <S.ProfileDropdownHeader as={BaseRow} gutter={[10, 10]} align="middle">
         <BaseCol>
-          <BaseAvatar src={user.imgUrl} alt="User" shape="circle" size={40} />
+          <BaseAvatar src={user.avatar} alt="User" shape="circle" size={40} />
         </BaseCol>
         {isTablet && (
           <BaseCol>

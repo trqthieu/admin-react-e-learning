@@ -12,16 +12,17 @@ import { BaseForm } from '@app/components/common/forms/BaseForm/BaseForm';
 import { BaseInput } from '@app/components/common/inputs/BaseInput/BaseInput';
 import { BaseSelect } from '@app/components/common/selects/BaseSelect/BaseSelect';
 import { BACKEND_BASE_URL } from '@app/constants/config/api';
+import { beforeUploadImage } from '@app/constants/config/upload';
 import { notificationController } from '@app/controllers/notificationController';
 import type { UploadProps } from 'antd';
-import { Button, Form, Input, message } from 'antd';
+import { Button, Form, Input } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 // import MarkdownIt from 'markdown-it';
 // import MarkdownEditor from 'react-markdown-editor-lite';
 // import 'react-markdown-editor-lite/lib/index.css';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 const formItemLayout = {
   labelCol: { span: 24 },
   wrapperCol: { span: 24 },
@@ -39,18 +40,6 @@ const getBase64 = (img: File, callback: (url: string) => void) => {
   const reader = new FileReader();
   reader.addEventListener('load', () => callback(reader.result as string));
   reader.readAsDataURL(img);
-};
-
-const beforeUpload = (file: File) => {
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-  if (!isJpgOrPng) {
-    message.error('You can only upload JPG/PNG file!');
-  }
-  const isLt2M = file.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    message.error('Image must smaller than 2MB!');
-  }
-  return isJpgOrPng && isLt2M;
 };
 
 const AddArticlePage: React.FC = () => {
@@ -179,7 +168,7 @@ const AddArticlePage: React.FC = () => {
                   maxCount={1}
                   multiple={false}
                   showUploadList={false}
-                  beforeUpload={beforeUpload}
+                  beforeUpload={beforeUploadImage}
                   onChange={handleChange}
                 >
                   {imageUrl ? (

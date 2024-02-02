@@ -2,8 +2,8 @@ import { message } from 'antd';
 
 export const uploadFileValidation = {
   image: {
-    pattern: ['image/jpeg', 'image/png'],
-    messagePattern: 'You can only upload JPG/PNG file!',
+    pattern: ['image/jpeg', 'image/png', 'image/webp'],
+    messagePattern: 'You can only upload JPG/PNG/WEBP file!',
     limit: 2,
     messageLimit: 'Image must smaller than 2MB!',
   },

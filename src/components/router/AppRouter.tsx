@@ -159,112 +159,567 @@ export const AppRouter: React.FC = () => {
     <BrowserRouter>
       <Routes>
         <Route path={NFT_DASHBOARD_PATH} element={protectedLayout}>
-          <Route index element={<NftDashboard />} />
-          <Route path={MEDICAL_DASHBOARD_PATH} element={<MedicalDashboard />} />
+          <Route
+            index
+            element={
+              <RequireAuth>
+                <NftDashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={MEDICAL_DASHBOARD_PATH}
+            element={
+              <RequireAuth>
+                <MedicalDashboard />
+              </RequireAuth>
+            }
+          />
           <Route path="apps">
-            <Route path="feed" element={<NewsFeed />} />
+            <Route
+              path="feed"
+              element={
+                <RequireAuth>
+                  <NewsFeed />
+                </RequireAuth>
+              }
+            />
           </Route>
           <Route path="forms">
-            <Route path="advanced-forms" element={<AdvancedForm />} />
+            <Route
+              path="advanced-forms"
+              element={
+                <RequireAuth>
+                  <AdvancedForm />
+                </RequireAuth>
+              }
+            />
           </Route>
           <Route path="users">
-            <Route path="add-user" element={<AddUser />} />
-            <Route path="list" element={<UserList />} />
-            <Route path="detail/:id" element={<AddUser />} />
+            <Route
+              path="add-user"
+              element={
+                <RequireAuth>
+                  <AddUser />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="list"
+              element={
+                <RequireAuth>
+                  <UserList />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="detail/:id"
+              element={
+                <RequireAuth>
+                  <AddUser />
+                </RequireAuth>
+              }
+            />
           </Route>
           <Route path="courses">
-            <Route path="add-course" element={<AddCourse />} />
-            <Route path="list" element={<ListCourse />} />
+            <Route
+              path="add-course"
+              element={
+                <RequireAuth>
+                  <AddCourse />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="list"
+              element={
+                <RequireAuth>
+                  <ListCourse />
+                </RequireAuth>
+              }
+            />
             <Route path="detail/:courseId">
               <Route path="sections">
                 <Route path=":sectionId/units">
                   <Route path=":unitId">
-                    <Route path="" element={<DetailCourseUnit />} />
-                    <Route path="lessons/create" element={<AddLesson />} />
-                    <Route path="lessons/:lessonId" element={<AddLesson />} />
-                    <Route path="exercises/create" element={<AddExercise />} />
-                    <Route path="exercises/:exerciseId" element={<AddExercise />} />
+                    <Route
+                      path=""
+                      element={
+                        <RequireAuth>
+                          <DetailCourseUnit />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="lessons/create"
+                      element={
+                        <RequireAuth>
+                          <AddLesson />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="lessons/:lessonId"
+                      element={
+                        <RequireAuth>
+                          <AddLesson />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="exercises/create"
+                      element={
+                        <RequireAuth>
+                          <AddExercise />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="exercises/:exerciseId"
+                      element={
+                        <RequireAuth>
+                          <AddExercise />
+                        </RequireAuth>
+                      }
+                    />
                   </Route>
 
-                  <Route path="" element={<ListCourseUnit />} />
+                  <Route
+                    path=""
+                    element={
+                      <RequireAuth>
+                        <ListCourseUnit />
+                      </RequireAuth>
+                    }
+                  />
                 </Route>
-                <Route path="" element={<ListCourseSection />} />
+                <Route
+                  path=""
+                  element={
+                    <RequireAuth>
+                      <ListCourseSection />
+                    </RequireAuth>
+                  }
+                />
               </Route>
-              <Route path="" element={<AddCourse />} />
+              <Route
+                path=""
+                element={
+                  <RequireAuth>
+                    <AddCourse />
+                  </RequireAuth>
+                }
+              />
             </Route>
           </Route>
           <Route path="courseGroup">
-            <Route path="add-courseGroup" element={<AddCourseGroup />} />
-            <Route path="list" element={<ListCourseGroup />} />
-            <Route path="detail/:id" element={<AddCourseGroup />} />
+            <Route
+              path="add-courseGroup"
+              element={
+                <RequireAuth>
+                  <AddCourseGroup />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="list"
+              element={
+                <RequireAuth>
+                  <ListCourseGroup />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="detail/:id"
+              element={
+                <RequireAuth>
+                  <AddCourseGroup />
+                </RequireAuth>
+              }
+            />
           </Route>
           <Route path="Exams">
-            <Route path="add-exam" element={<AddExam />} />
-            <Route path="list" element={<ListExam />} />
-            <Route path="detail/:examId" element={<AddExam />} />
+            <Route
+              path="add-exam"
+              element={
+                <RequireAuth>
+                  <AddExam />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="list"
+              element={
+                <RequireAuth>
+                  <ListExam />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="detail/:examId"
+              element={
+                <RequireAuth>
+                  <AddExam />
+                </RequireAuth>
+              }
+            />
           </Route>
           <Route path="Articles">
-            <Route path="add-article" element={<AddArticle />} />
-            <Route path="list" element={<ListArticle />} />
-            <Route path="detail/:articleId" element={<AddArticle />} />
+            <Route
+              path="add-article"
+              element={
+                <RequireAuth>
+                  <AddArticle />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="list"
+              element={
+                <RequireAuth>
+                  <ListArticle />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="detail/:articleId"
+              element={
+                <RequireAuth>
+                  <AddArticle />
+                </RequireAuth>
+              }
+            />
           </Route>
-          <Route path="data-tables" element={<DataTables />} />
-          <Route path="charts" element={<Charts />} />
+          <Route
+            path="data-tables"
+            element={
+              <RequireAuth>
+                <DataTables />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="charts"
+            element={
+              <RequireAuth>
+                <Charts />
+              </RequireAuth>
+            }
+          />
           <Route path="maps">
-            <Route path="google-maps" element={<Google />} />
-            <Route path="leaflet-maps" element={<Leaflet />} />
-            <Route path="react-simple-maps" element={<ReactSimple />} />
-            <Route path="pigeon-maps" element={<Pigeons />} />
+            <Route
+              path="google-maps"
+              element={
+                <RequireAuth>
+                  <Google />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="leaflet-maps"
+              element={
+                <RequireAuth>
+                  <Leaflet />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="react-simple-maps"
+              element={
+                <RequireAuth>
+                  <ReactSimple />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="pigeon-maps"
+              element={
+                <RequireAuth>
+                  <Pigeons />
+                </RequireAuth>
+              }
+            />
           </Route>
-          <Route path="server-error" element={<ServerError />} />
-          <Route path="404" element={<Error404 />} />
-          <Route path="profile" element={<ProfileLayout />}>
-            <Route path="personal-info" element={<PersonalInfo />} />
-            <Route path="security-settings" element={<SecuritySettings />} />
-            <Route path="notifications" element={<Notifications />} />
-            <Route path="payments" element={<Payments />} />
+          <Route
+            path="server-error"
+            element={
+              <RequireAuth>
+                <ServerError />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="404"
+            element={
+              <RequireAuth>
+                <Error404 />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <RequireAuth>
+                <ProfileLayout />{' '}
+              </RequireAuth>
+            }
+          >
+            <Route
+              path="personal-info"
+              element={
+                <RequireAuth>
+                  <PersonalInfo />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="security-settings"
+              element={
+                <RequireAuth>
+                  <SecuritySettings />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="notifications"
+              element={
+                <RequireAuth>
+                  <Notifications />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="payments"
+              element={
+                <RequireAuth>
+                  <Payments />
+                </RequireAuth>
+              }
+            />
           </Route>
           <Route path="ui-components">
-            <Route path="button" element={<Buttons />} />
-            <Route path="spinner" element={<Spinners />} />
-            <Route path="input" element={<Inputs />} />
-            <Route path="checkbox" element={<Checkboxes />} />
-            <Route path="radio" element={<Radios />} />
-            <Route path="select" element={<Selects />} />
-            <Route path="switch" element={<Switches />} />
-            <Route path="upload" element={<Uploads />} />
-            <Route path="rate" element={<Rates />} />
-            <Route path="auto-complete" element={<AutoCompletes />} />
-            <Route path="steps" element={<Steps />} />
-            <Route path="date-time-picker" element={<DateTimePickers />} />
-            <Route path="dropdown" element={<Dropdowns />} />
-            <Route path="breadcrumbs" element={<Breadcrumbs />} />
-            <Route path="tabs" element={<Tabs />} />
-            <Route path="avatar" element={<Avatars />} />
-            <Route path="badge" element={<Badges />} />
-            <Route path="collapse" element={<Collapse />} />
-            <Route path="pagination" element={<Pagination />} />
-            <Route path="modal" element={<Modals />} />
-            <Route path="popover" element={<Popovers />} />
-            <Route path="popconfirm" element={<Popconfirms />} />
-            <Route path="progress" element={<Progress />} />
-            <Route path="result" element={<Results />} />
-            <Route path="alert" element={<Alerts />} />
-            <Route path="notification" element={<NotificationsUI />} />
-            <Route path="skeleton" element={<Skeletons />} />
+            <Route
+              path="button"
+              element={
+                <RequireAuth>
+                  <Buttons />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="spinner"
+              element={
+                <RequireAuth>
+                  <Spinners />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="input"
+              element={
+                <RequireAuth>
+                  <Inputs />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="checkbox"
+              element={
+                <RequireAuth>
+                  <Checkboxes />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="radio"
+              element={
+                <RequireAuth>
+                  <Radios />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="select"
+              element={
+                <RequireAuth>
+                  <Selects />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="switch"
+              element={
+                <RequireAuth>
+                  <Switches />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="upload"
+              element={
+                <RequireAuth>
+                  <Uploads />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="rate"
+              element={
+                <RequireAuth>
+                  <Rates />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="auto-complete"
+              element={
+                <RequireAuth>
+                  <AutoCompletes />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="steps"
+              element={
+                <RequireAuth>
+                  <Steps />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="date-time-picker"
+              element={
+                <RequireAuth>
+                  <DateTimePickers />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="dropdown"
+              element={
+                <RequireAuth>
+                  <Dropdowns />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="breadcrumbs"
+              element={
+                <RequireAuth>
+                  <Breadcrumbs />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="tabs"
+              element={
+                <RequireAuth>
+                  <Tabs />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="avatar"
+              element={
+                <RequireAuth>
+                  <Avatars />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="badge"
+              element={
+                <RequireAuth>
+                  <Badges />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="collapse"
+              element={
+                <RequireAuth>
+                  <Collapse />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="pagination"
+              element={
+                <RequireAuth>
+                  <Pagination />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="modal"
+              element={
+                <RequireAuth>
+                  <Modals />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="popover"
+              element={
+                <RequireAuth>
+                  <Popovers />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="popconfirm"
+              element={
+                <RequireAuth>
+                  <Popconfirms />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="progress"
+              element={
+                <RequireAuth>
+                  <Progress />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="result"
+              element={
+                <RequireAuth>
+                  <Results />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="alert"
+              element={
+                <RequireAuth>
+                  <Alerts />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="notification"
+              element={
+                <RequireAuth>
+                  <NotificationsUI />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="skeleton"
+              element={
+                <RequireAuth>
+                  <Skeletons />
+                </RequireAuth>
+              }
+            />
           </Route>
         </Route>
         <Route path="/auth" element={<AuthLayoutFallback />}>
           <Route path="login" element={<LoginPage />} />
           <Route path="sign-up" element={<SignUpPage />} />
-          <Route
-            path="lock"
-            element={
-              <RequireAuth>
-                <LockPage />
-              </RequireAuth>
-            }
-          />
+          <Route path="lock" element={<LockPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route path="security-code" element={<SecurityCodePage />} />
           <Route path="new-password" element={<NewPasswordPage />} />

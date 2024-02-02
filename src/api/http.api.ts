@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { AxiosError } from 'axios';
 import { ApiError } from '@app/api/ApiError';
-import { readToken } from '@app/services/localStorage.service';
+import { deleteToken, readToken } from '@app/services/localStorage.service';
 import { notificationController } from '@app/controllers/notificationController';
 import { BACKEND_BASE_URL } from '@app/constants/config/api';
 
@@ -16,7 +16,11 @@ httpApi.interceptors.request.use((config) => {
   return config;
 });
 
-httpApi.interceptors.response.use(undefined, (error: AxiosError) => {
+httpApi.interceptors.response.use(undefined, (error: any) => {
+  if (error.toJSON().status === 401) {
+    deleteToken();
+    window.location.href = '/auth/login';
+  }
   notificationController.error({
     message: Array.isArray(error.response?.data?.message)
       ? error.response?.data?.message?.[0]

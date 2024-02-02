@@ -1,3 +1,4 @@
+import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 import { AddUserRequest, addUser, getUser, updateUser } from '@app/api/users.api';
 import { BaseButton } from '@app/components/common/BaseButton/BaseButton';
 import { BaseCard } from '@app/components/common/BaseCard/BaseCard';
@@ -15,14 +16,13 @@ import { InputPassword } from '@app/components/common/inputs/InputPassword/Input
 import { FirstNameItem } from '@app/components/profile/profileCard/profileFormNav/nav/PersonalInfo/FirstNameItem/FirstNameItem';
 import { LastNameItem } from '@app/components/profile/profileCard/profileFormNav/nav/PersonalInfo/LastNameItem/LastNameItem';
 import { BACKEND_BASE_URL } from '@app/constants/config/api';
+import { beforeUploadImage } from '@app/constants/config/upload';
 import { notificationController } from '@app/controllers/notificationController';
-import { message } from 'antd';
+import type { UploadProps } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { UploadProps } from 'antd';
-import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 
 const formItemLayout = {
   labelCol: { span: 24 },
@@ -66,18 +66,6 @@ const AddUserPage: React.FC = () => {
   const navigate = useNavigate();
   const router = useParams();
   const [imageUrl, setImageUrl] = useState<string>();
-
-  const beforeUpload = (file: File) => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-      message.error('You can only upload JPG/PNG file!');
-    }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error('Image must smaller than 2MB!');
-    }
-    return isJpgOrPng && isLt2M;
-  };
 
   const handleChange: UploadProps['onChange'] = (info) => {
     if (info.file.status === 'uploading') {
@@ -178,7 +166,7 @@ const AddUserPage: React.FC = () => {
                   maxCount={1}
                   multiple={false}
                   showUploadList={false}
-                  beforeUpload={beforeUpload}
+                  beforeUpload={beforeUploadImage}
                   onChange={handleChange}
                 >
                   {imageUrl ? (
