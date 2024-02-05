@@ -119,13 +119,13 @@ const DetailCourseLessonPage: React.FC = () => {
         return <span>{record.order + 1}</span>;
       },
     },
-    {
-      title: 'Banner',
-      dataIndex: 'banner',
-      render(value, record) {
-        return <img style={{ maxWidth: '100px' }} src={record.banner} />;
-      },
-    },
+    // {
+    //   title: 'Banner',
+    //   dataIndex: 'banner',
+    //   render(value, record) {
+    //     return <img style={{ maxWidth: '100px' }} src={record.banner} />;
+    //   },
+    // },
     {
       title: 'Title',
       dataIndex: 'title',
@@ -308,13 +308,13 @@ const DetailCourseLessonPage: React.FC = () => {
         return <span>{record.order + 1}</span>;
       },
     },
-    {
-      title: 'Banner',
-      dataIndex: 'banner',
-      render(value, record) {
-        return <img style={{ maxWidth: '100px' }} src={record.banner} />;
-      },
-    },
+    // {
+    //   title: 'Banner',
+    //   dataIndex: 'banner',
+    //   render(value, record) {
+    //     return <img style={{ maxWidth: '100px' }} src={record.banner} />;
+    //   },
+    // },
     {
       title: 'Title',
       dataIndex: 'title',

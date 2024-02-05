@@ -13,6 +13,12 @@ export const uploadFileValidation = {
     limit: 20,
     messageLimit: 'Video must smaller than 20MB!',
   },
+  audio: {
+    pattern: ['audio/mpeg'],
+    messagePattern: 'You can only upload MP3 file!',
+    limit: 50,
+    messageLimit: 'Audio must smaller than 20MB!',
+  },
   document: {
     pattern: [
       'application/pdf',
@@ -46,6 +52,18 @@ export const beforeUploadVideo = (file: File) => {
   const isLt2M = file.size / 1024 / 1024 < uploadFileValidation.video.limit;
   if (!isLt2M) {
     message.error(uploadFileValidation.video.messageLimit);
+  }
+  return isJpgOrPng && isLt2M;
+};
+
+export const beforeUploadAudio = (file: File) => {
+  const isJpgOrPng = uploadFileValidation.audio.pattern.includes(file.type);
+  if (!isJpgOrPng) {
+    message.error(uploadFileValidation.audio.messagePattern);
+  }
+  const isLt2M = file.size / 1024 / 1024 < uploadFileValidation.audio.limit;
+  if (!isLt2M) {
+    message.error(uploadFileValidation.audio.messageLimit);
   }
   return isJpgOrPng && isLt2M;
 };

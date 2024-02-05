@@ -17,6 +17,7 @@ import { BaseSelect } from '@app/components/common/selects/BaseSelect/BaseSelect
 import { BACKEND_BASE_URL } from '@app/constants/config/api';
 import { beforeUploadImage } from '@app/constants/config/upload';
 import { notificationController } from '@app/controllers/notificationController';
+import { useAppSelector } from '@app/hooks/reduxHooks';
 import type { UploadProps } from 'antd';
 import { Button, DatePicker, Divider, Form, Input, Modal, Space } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
@@ -45,6 +46,7 @@ const getBase64 = (img: File, callback: (url: string) => void) => {
 };
 
 const AddCoursePage: React.FC = () => {
+  const user = useAppSelector((state) => state.auth.user);
   const [isFieldsChanged, setFieldsChanged] = useState(false);
   const [form] = useForm();
   const [courseGroupForm] = useForm();
@@ -106,13 +108,13 @@ const AddCoursePage: React.FC = () => {
       banner: values?.banner?.[0]?.response?.url || imageUrl,
       level: values.level,
       status: values.status,
-      teacherId: values.teacherId,
+      teacherId: values.teacherId || user?.id,
       courseGroupId: values.courseGroupId || 0,
       category: values.category,
-      price: values.price,
-      discount: values.discount,
-      timeDiscountStart: values.timeDiscount[0].toISOString(),
-      timeDiscountEnd: values.timeDiscount[1].toISOString(),
+      price: values.price || 0,
+      discount: values.discount || 0,
+      timeDiscountStart: values?.timeDiscount?.[0]?.toISOString() || new Date().toISOString(),
+      timeDiscountEnd: values?.timeDiscount?.[1]?.toISOString() || new Date().toISOString(),
     };
 
     if (router.courseId) {
@@ -142,7 +144,7 @@ const AddCoursePage: React.FC = () => {
         const addCourseGroupPayload: AddCourseGroupRequest = {
           name: values.name,
           description: values.description,
-          authorId: values.authorId,
+          authorId: values.authorId || user?.id,
         };
         const data = await addCourseGroup(addCourseGroupPayload);
         if (data?.id) {
@@ -228,7 +230,7 @@ const AddCoursePage: React.FC = () => {
           >
             <Input />
           </Form.Item>
-          <BaseButtonsForm.Item
+          {/* <BaseButtonsForm.Item
             name="authorId"
             label={'Teacher'}
             hasFeedback
@@ -243,7 +245,7 @@ const AddCoursePage: React.FC = () => {
               }
               options={teacherOption}
             />
-          </BaseButtonsForm.Item>
+          </BaseButtonsForm.Item> */}
         </Form>
       </Modal>
       <BaseRow gutter={[30, 30]}>
@@ -329,7 +331,7 @@ const AddCoursePage: React.FC = () => {
                     </>
                   </BaseButtonsForm.Item>
                 </BaseCol>
-                <BaseCol xs={24} sm={9} xl={9}>
+                {/* <BaseCol xs={24} sm={9} xl={9}>
                   <BaseButtonsForm.Item
                     name="teacherId"
                     label={'Teacher'}
@@ -348,7 +350,7 @@ const AddCoursePage: React.FC = () => {
                       options={teacherOption}
                     />
                   </BaseButtonsForm.Item>
-                </BaseCol>
+                </BaseCol> */}
                 <BaseCol xs={24} sm={9} xl={9}>
                   <BaseButtonsForm.Item name="courseGroupId" label={'Course Group'} hasFeedback>
                     <BaseSelect
@@ -519,7 +521,7 @@ const AddCoursePage: React.FC = () => {
               >
                 <Input.TextArea autoSize={{ minRows: 4, maxRows: 7 }} />
               </BaseForm.Item>
-              <BaseRow gutter={[30, 30]}>
+              {/* <BaseRow gutter={[30, 30]}>
                 <BaseCol xs={24} sm={8} xl={8}>
                   <BaseButtonsForm.Item
                     label={'Price'}
@@ -573,7 +575,7 @@ const AddCoursePage: React.FC = () => {
                     <RangePicker />
                   </BaseForm.Item>
                 </BaseCol>
-              </BaseRow>
+              </BaseRow> */}
             </BaseButtonsForm>
           </BaseCard>
         </BaseCol>

@@ -139,7 +139,7 @@ const AddExercisePage: React.FC = () => {
       content: values.content,
       banner: values?.banner?.[0]?.response?.url || imageUrl,
       courseUnitId: router?.unitId ? +router?.unitId : 0,
-      video: values?.video?.[0]?.response?.url || values?.video?.[0]?.url,
+      video: values?.video?.[0]?.response?.url || values?.video?.[0]?.url || null,
       attachments: values?.attachments?.map((attachment: any) => attachment?.url || attachment?.response?.url),
       order: values.order ?? theLastOrder,
     };
@@ -173,18 +173,22 @@ const AddExercisePage: React.FC = () => {
         description: data.description,
         content: data.content,
         order: data.order || 0,
-        video: [
-          {
-            name: 'Click to see video',
-            url: data.video,
-          },
-        ],
-        attachments: [
-          ...data.attachments.map((attachment, index) => ({
-            name: `Attachment ${index + 1}`,
-            url: attachment,
-          })),
-        ],
+        video: data.video
+          ? [
+              {
+                name: 'Click to see video',
+                url: data.video,
+              },
+            ]
+          : [],
+        attachments: data?.attachments?.length
+          ? [
+              ...data.attachments.map((attachment, index) => ({
+                name: `Attachment ${index + 1}`,
+                url: attachment,
+              })),
+            ]
+          : [],
       });
       setImageUrl(data.banner);
     };
@@ -278,6 +282,7 @@ const AddExercisePage: React.FC = () => {
           answerType: values.answerType,
           questionType: 'EXERCISE',
           exerciseId: router.exerciseId ? +router.exerciseId : 0,
+          examId: 0,
           selections: values?.selections?.map((selection: AddQuestionSelectRequest, index: number) => ({
             key: selection.key,
             isCorrect: selection.isCorrect === true,
@@ -352,16 +357,21 @@ const AddExercisePage: React.FC = () => {
     {
       title: 'Title',
       dataIndex: 'title',
-    },
-    {
-      title: 'Content',
-      dataIndex: 'content',
       render: (text, record) => (
         <Typography.Text ellipsis={true} style={{ width: 200 }}>
           {text}
         </Typography.Text>
       ),
     },
+    // {
+    //   title: 'Content',
+    //   dataIndex: 'content',
+    //   render: (text, record) => (
+    //     <Typography.Text ellipsis={true} style={{ width: 200 }}>
+    //       {text}
+    //     </Typography.Text>
+    //   ),
+    // },
     {
       title: t('tables.actions'),
       dataIndex: 'actions',
@@ -498,7 +508,7 @@ const AddExercisePage: React.FC = () => {
                 label={'Banner'}
                 valuePropName="fileList"
                 getValueFromEvent={normFile}
-                rules={[{ required: imageUrl ? false : true, message: 'Course banner is required' }]}
+                // rules={[{ required: imageUrl ? false : true, message: 'Course banner is required' }]}
               >
                 <BaseUpload
                   name="file"
@@ -597,7 +607,7 @@ const AddExercisePage: React.FC = () => {
                       >
                         <BaseInput />
                       </Form.Item>
-                      <Form.Item
+                      {/* <Form.Item
                         name="description"
                         label="Description"
                         rules={[
@@ -620,7 +630,7 @@ const AddExercisePage: React.FC = () => {
                         ]}
                       >
                         <BaseInput />
-                      </Form.Item>
+                      </Form.Item> */}
                       <BaseButtonsForm.Item
                         name="answerType"
                         label={'Answer Type'}
@@ -733,7 +743,7 @@ const AddExercisePage: React.FC = () => {
                       >
                         <BaseInput />
                       </Form.Item>
-                      <Form.Item
+                      {/* <Form.Item
                         name="description"
                         label="Description"
                         rules={[
@@ -756,7 +766,7 @@ const AddExercisePage: React.FC = () => {
                         ]}
                       >
                         <BaseInput />
-                      </Form.Item>
+                      </Form.Item> */}
                       <BaseButtonsForm.Item
                         name="answerType"
                         label={'Answer Type'}

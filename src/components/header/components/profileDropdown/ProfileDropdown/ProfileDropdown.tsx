@@ -19,11 +19,11 @@ export const ProfileDropdown: React.FC = () => {
         <BaseCol>
           <BaseAvatar src={user.avatar} alt="User" shape="circle" size={40} />
         </BaseCol>
-        {isTablet && (
+        {/* {isTablet && (
           <BaseCol>
             <span>{`${user.firstName} ${user.lastName[0]}`}</span>
           </BaseCol>
-        )}
+        )} */}
       </S.ProfileDropdownHeader>
     </BasePopover>
   ) : null;

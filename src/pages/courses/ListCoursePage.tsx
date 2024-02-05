@@ -107,7 +107,11 @@ const ListCoursePage: React.FC = () => {
       title: 'Description',
       dataIndex: 'description',
       key: 'description',
-      render: (_, record) => <span>{record.description[0]}</span>,
+      render: (text, record) => (
+        <Typography.Text ellipsis={true} style={{ width: 200 }}>
+          {record.description[0]}
+        </Typography.Text>
+      ),
     },
     {
       title: 'Guideline',

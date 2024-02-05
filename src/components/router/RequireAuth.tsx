@@ -8,10 +8,10 @@ const RequireAuth: React.FC<WithChildrenProps> = ({ children }) => {
   const auth = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   useEffect(() => {
-    if (auth?.token) {
+    if (auth?.token && !auth?.user) {
       dispatch(doRetrieveUser());
     }
-  }, [dispatch, auth?.token]);
+  }, [dispatch, auth?.token, auth?.user]);
   return auth?.token ? <>{children}</> : <Navigate to="/auth/login" replace />;
 };
 

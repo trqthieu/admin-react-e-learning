@@ -1,5 +1,4 @@
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import { CourseExerciseResponse } from '@app/api/course-exercise.api';
+import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { BaseButton } from '@app/components/common/BaseButton/BaseButton';
 import { BaseCard } from '@app/components/common/BaseCard/BaseCard';
 import { BaseCol } from '@app/components/common/BaseCol/BaseCol';
@@ -9,7 +8,7 @@ import { BaseButtonsForm } from '@app/components/common/forms/BaseButtonsForm/Ba
 import { BaseForm } from '@app/components/common/forms/BaseForm/BaseForm';
 import { BaseInput } from '@app/components/common/inputs/BaseInput/BaseInput';
 import { notificationController } from '@app/controllers/notificationController';
-import { Input, Typography } from 'antd';
+import { Input } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,7 +36,10 @@ import { BaseCheckbox } from '@app/components/common/BaseCheckbox/BaseCheckbox';
 import { BaseRadio } from '@app/components/common/BaseRadio/BaseRadio';
 import { BaseSpace } from '@app/components/common/BaseSpace/BaseSpace';
 import { BaseTable } from '@app/components/common/BaseTable/BaseTable';
-import { BaseSelect } from '@app/components/common/selects/BaseSelect/BaseSelect';
+import { BaseUpload } from '@app/components/common/BaseUpload/BaseUpload';
+import { BACKEND_BASE_URL } from '@app/constants/config/api';
+import { beforeUploadAudio } from '@app/constants/config/upload';
+import { useAppSelector } from '@app/hooks/reduxHooks';
 import { useMounted } from '@app/hooks/useMounted';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
@@ -56,7 +58,8 @@ interface DataType extends QuestionResponse {
   key: number;
 }
 
-const AddExercisePage: React.FC = () => {
+const AddExamPage: React.FC = () => {
+  const user = useAppSelector((state) => state.auth.user);
   const [isFieldsChanged, setFieldsChanged] = useState(false);
   const [teacherOption, setTeacherOption] = useState<Array<{ value: number; label: string }>>([]);
   const [form] = useForm();
@@ -83,7 +86,7 @@ const AddExercisePage: React.FC = () => {
       description: values.description,
       content: values.content,
       category: values.category,
-      authorId: values.authorId,
+      authorId: values.authorId || user?.id,
     };
     if (router.examId) {
       const data = await updateExam(+router.examId, addExamPayload);
@@ -114,7 +117,7 @@ const AddExercisePage: React.FC = () => {
         description: data.description,
         content: data.content,
         category: data.category,
-        authorId: data.author.id,
+        authorId: data?.author?.id,
       });
     };
     if (id) {
@@ -207,6 +210,7 @@ const AddExercisePage: React.FC = () => {
 
         setConfirmLoading(true);
         const addQuestionRequest: AddQuestionRequest = {
+          audio: values?.audio?.[0]?.response?.url || values?.audio?.[0]?.url || null,
           title: values.title,
           content: values.content,
           description: values.description,
@@ -214,6 +218,7 @@ const AddExercisePage: React.FC = () => {
           answerType: values.answerType,
           questionType: 'EXAM',
           examId: router.examId ? +router.examId : 0,
+          exerciseId: 0,
           selections: values?.selections?.map((selection: AddQuestionSelectRequest, index: number) => ({
             key: selection.key,
             isCorrect: selection.isCorrect === true,
@@ -244,6 +249,7 @@ const AddExercisePage: React.FC = () => {
         const editQuestionRequest: AddQuestionRequest = {
           title: values.title,
           content: values.content,
+          audio: values?.audio?.[0]?.response?.url || values?.audio?.[0]?.url || null,
           description: values.description,
           order: values.order,
           answerType: values.answerType,
@@ -289,15 +295,15 @@ const AddExercisePage: React.FC = () => {
       title: 'Title',
       dataIndex: 'title',
     },
-    {
-      title: 'Content',
-      dataIndex: 'content',
-      render: (text, record) => (
-        <Typography.Text ellipsis={true} style={{ width: 200 }}>
-          {text}
-        </Typography.Text>
-      ),
-    },
+    // {
+    //   title: 'Content',
+    //   dataIndex: 'content',
+    //   render: (text, record) => (
+    //     <Typography.Text ellipsis={true} style={{ width: 200 }}>
+    //       {text}
+    //     </Typography.Text>
+    //   ),
+    // },
     {
       title: t('tables.actions'),
       dataIndex: 'actions',
@@ -321,12 +327,27 @@ const AddExercisePage: React.FC = () => {
     setOpenModalQuestion(true);
   };
 
+  const normFile = (e = { fileList: [] }) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e && e.fileList;
+  };
+
   const handleEdit = (record: DataType) => {
     setOpenModalEdit(true);
     editForm.setFieldsValue({
       id: record.id,
       title: record.title,
       description: record.description,
+      audio: record.audio
+        ? [
+            {
+              name: 'Click to see audio',
+              url: record.audio,
+            },
+          ]
+        : [],
       content: record.content,
       answerType: record.answerType,
       selections: record.questionSelects,
@@ -446,7 +467,7 @@ const AddExercisePage: React.FC = () => {
                   <BaseRadio value="OTHERS">Others</BaseRadio>
                 </BaseRadio.Group>
               </BaseButtonsForm.Item>
-              <BaseButtonsForm.Item
+              {/* <BaseButtonsForm.Item
                 name="authorId"
                 label={'Teacher'}
                 hasFeedback
@@ -461,7 +482,7 @@ const AddExercisePage: React.FC = () => {
                   }
                   options={teacherOption}
                 />
-              </BaseButtonsForm.Item>
+              </BaseButtonsForm.Item> */}
             </BaseButtonsForm>
           </BaseCard>
         </BaseCol>
@@ -497,7 +518,25 @@ const AddExercisePage: React.FC = () => {
                       >
                         <BaseInput />
                       </Form.Item>
-                      <Form.Item
+                      <BaseButtonsForm.Item
+                        name="audio"
+                        label={'Audio'}
+                        valuePropName="fileList"
+                        getValueFromEvent={normFile}
+                      >
+                        <BaseUpload
+                          name="file"
+                          action={`${BACKEND_BASE_URL}/files/upload-document`}
+                          listType="picture"
+                          beforeUpload={beforeUploadAudio}
+                          maxCount={1}
+                        >
+                          <BaseButton type="default" icon={<UploadOutlined />}>
+                            {t('forms.validationFormLabels.clickToUpload')}
+                          </BaseButton>
+                        </BaseUpload>
+                      </BaseButtonsForm.Item>
+                      {/* <Form.Item
                         name="description"
                         label="Description"
                         rules={[
@@ -520,7 +559,7 @@ const AddExercisePage: React.FC = () => {
                         ]}
                       >
                         <BaseInput />
-                      </Form.Item>
+                      </Form.Item> */}
                       <BaseButtonsForm.Item
                         name="answerType"
                         label={'Answer Type'}
@@ -633,7 +672,25 @@ const AddExercisePage: React.FC = () => {
                       >
                         <BaseInput />
                       </Form.Item>
-                      <Form.Item
+                      <BaseButtonsForm.Item
+                        name="audio"
+                        label={'Audio'}
+                        valuePropName="fileList"
+                        getValueFromEvent={normFile}
+                      >
+                        <BaseUpload
+                          name="file"
+                          action={`${BACKEND_BASE_URL}/files/upload-document`}
+                          listType="picture"
+                          beforeUpload={beforeUploadAudio}
+                          maxCount={1}
+                        >
+                          <BaseButton type="default" icon={<UploadOutlined />}>
+                            {t('forms.validationFormLabels.clickToUpload')}
+                          </BaseButton>
+                        </BaseUpload>
+                      </BaseButtonsForm.Item>
+                      {/* <Form.Item
                         name="description"
                         label="Description"
                         rules={[
@@ -656,7 +713,7 @@ const AddExercisePage: React.FC = () => {
                         ]}
                       >
                         <BaseInput />
-                      </Form.Item>
+                      </Form.Item> */}
                       <BaseButtonsForm.Item
                         name="answerType"
                         label={'Answer Type'}
@@ -752,4 +809,4 @@ const AddExercisePage: React.FC = () => {
   );
 };
 
-export default AddExercisePage;
+export default AddExamPage;

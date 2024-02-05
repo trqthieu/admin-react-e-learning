@@ -8,6 +8,7 @@ import { PageTitle } from '@app/components/common/PageTitle/PageTitle';
 import { BaseButtonsForm } from '@app/components/common/forms/BaseButtonsForm/BaseButtonsForm';
 import { BaseSelect } from '@app/components/common/selects/BaseSelect/BaseSelect';
 import { notificationController } from '@app/controllers/notificationController';
+import { useAppSelector } from '@app/hooks/reduxHooks';
 import { Form, Input } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -20,6 +21,7 @@ const formItemLayout = {
 };
 
 const AddCourseGroupPage: React.FC = () => {
+  const user = useAppSelector((state) => state.auth.user);
   const [isFieldsChanged, setFieldsChanged] = useState(false);
   const [teacherOption, setTeacherOption] = useState<Array<{ value: number; label: string }>>([]);
   const [form] = useForm();
@@ -27,7 +29,7 @@ const AddCourseGroupPage: React.FC = () => {
     return {
       name: '',
       description: '',
-      authorId: undefined,
+      authorId: user?.id,
     };
   }, []);
   const { t } = useTranslation();
@@ -40,7 +42,7 @@ const AddCourseGroupPage: React.FC = () => {
     const addCourseGroupPayload: AddCourseGroupRequest = {
       name: values.name,
       description: values.description,
-      authorId: values.authorId,
+      authorId: values.authorId || user?.id,
     };
 
     if (router.id) {
@@ -67,7 +69,7 @@ const AddCourseGroupPage: React.FC = () => {
       const data = await getCourseGroup(id);
       form.setFieldsValue({
         ...data,
-        authorId: data.author.id,
+        authorId: data?.author?.id,
       });
     };
     if (id) {
@@ -132,7 +134,7 @@ const AddCourseGroupPage: React.FC = () => {
               >
                 <Input />
               </Form.Item>
-              <BaseButtonsForm.Item
+              {/* <BaseButtonsForm.Item
                 name="authorId"
                 label={'Teacher'}
                 hasFeedback
@@ -147,7 +149,7 @@ const AddCourseGroupPage: React.FC = () => {
                   }
                   options={teacherOption}
                 />
-              </BaseButtonsForm.Item>
+              </BaseButtonsForm.Item> */}
             </BaseButtonsForm>
           </BaseCard>
         </BaseCol>
