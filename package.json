@@ -130,7 +130,7 @@
     "*/**/*.{js,ts,tsx}": "yarn lint"
   },
   "engines": {
-    "node": "20.x"
+    "node": "18.x"
   },
   "resolutions": {
     "@types/react": "^18.0.28",
