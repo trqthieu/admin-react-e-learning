@@ -5,6 +5,7 @@ export interface AddExamRequest {
   title: string;
   description: string;
   content: string;
+  time: number;
   category: string;
   authorId: number;
 }
@@ -13,6 +14,7 @@ export interface ExamResponse {
   id: number;
   title: string;
   description: string;
+  time: number;
   content: string;
   category: string;
   author: UserResponse;

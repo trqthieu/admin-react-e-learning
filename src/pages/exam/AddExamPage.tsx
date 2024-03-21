@@ -48,6 +48,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Form, Modal } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import { Pagination } from 'api/table.api';
+import { InputNumber } from '@app/components/common/inputs/InputNumber/InputNumber.styles';
 const { confirm } = Modal;
 const initialPagination: Pagination = {
   current: 1,
@@ -68,6 +69,7 @@ const AddExamPage: React.FC = () => {
       title: '',
       content: '',
       description: '',
+      time: 0,
       category: 'OTHERS',
     };
   }, []);
@@ -84,6 +86,7 @@ const AddExamPage: React.FC = () => {
     const addExamPayload: AddExamRequest = {
       title: values.title,
       description: values.description,
+      time: values.time,
       content: values.content,
       category: values.category,
       authorId: values.authorId || user?.id,
@@ -116,6 +119,7 @@ const AddExamPage: React.FC = () => {
         title: data.title,
         description: data.description,
         content: data.content,
+        time: data.time,
         category: data.category,
         authorId: data?.author?.id,
       });
@@ -453,6 +457,9 @@ const AddExamPage: React.FC = () => {
               </BaseForm.Item>
               <BaseForm.Item name="description" label={'Description'}>
                 <Input.TextArea autoSize={{ minRows: 2, maxRows: 5 }} />
+              </BaseForm.Item>
+              <BaseForm.Item name="time" label={'Time'}>
+                <InputNumber />
               </BaseForm.Item>
               <BaseButtonsForm.Item
                 name="category"
