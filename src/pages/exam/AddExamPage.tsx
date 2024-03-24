@@ -420,6 +420,23 @@ const AddExamPage: React.FC = () => {
     }
   };
 
+  const uploadProps = {
+    name: 'file',
+    multiple: false,
+    action: `${BACKEND_BASE_URL}/questions/import/${router.examId}`,
+    onChange: (info: any) => {
+      const { status } = info.file;
+      if (status !== 'uploading') {
+        console.log(info.file, info.fileList);
+      }
+      if (status === 'done') {
+        notificationController.success({ message: t('uploads.successUpload', { name: info.file.name }) });
+      } else if (status === 'error') {
+        notificationController.error({ message: t('uploads.failedUpload', { name: info.file.name }) });
+      }
+    },
+  };
+
   return (
     <>
       <PageTitle>{router.examId ? 'Edit Exam Page' : 'Add Exam Page'}</PageTitle>
@@ -499,6 +516,9 @@ const AddExamPage: React.FC = () => {
               <BaseButton onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
                 Add a new question
               </BaseButton>
+              <BaseUpload {...uploadProps} showUploadList={false}>
+                <BaseButton icon={<UploadOutlined />}>Upload question</BaseButton>
+              </BaseUpload>
               <Modal
                 zIndex={1000}
                 open={openModalQuestion}
